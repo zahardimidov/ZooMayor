@@ -23,6 +23,16 @@ def env(key, default=None):
         return value
     return default
 
+LANGUAGES = dict(
+    ru = 'russian',
+    en = 'english',
+    it = 'italian',
+    es = 'spanish',
+    de = 'german'
+)
+
+DEFAULT_LANG = "ru"
+
 BASE_DIR = Path(__file__).parent.resolve()
 
 CARD_PICTURES_DIR = BASE_DIR.joinpath('/media/cards/')

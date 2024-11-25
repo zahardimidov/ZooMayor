@@ -5,6 +5,7 @@ from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.cards.models import Card
 
+
 def generate_uuid():
     return str(uuid.uuid4())
 
@@ -28,4 +29,3 @@ class Task(Base):
 
     def __str__(self) -> str:
         return self.title
-    

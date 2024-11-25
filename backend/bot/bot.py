@@ -4,11 +4,12 @@ from aiogram import BaseMiddleware, Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import Message, Update
+from aiogram.utils.deep_linking import decode_payload
 from bot.routers import base_router
 from config import BOT_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH
-from database.requests import get_user, set_user, set_referral
+from database.requests import get_user, set_referral, set_user
 from fastapi import Request
-from aiogram.utils.deep_linking import decode_payload
+
 
 async def extract_referrer(message_text: str):
     try:
@@ -22,7 +23,8 @@ async def extract_referrer(message_text: str):
         return referrer
     except Exception as e:
         pass
-            
+
+
 class RegisterUserMiddleware(BaseMiddleware):
     async def __call__(
             self,

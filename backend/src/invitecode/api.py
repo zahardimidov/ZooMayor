@@ -1,10 +1,13 @@
+from typing import List
+
+from database.requests import (get_bonus_by_code, get_user_invite_codes,
+                               set_user_invitecode)
 from fastapi import APIRouter, HTTPException
 from middlewares.webapp_user import webapp_user_middleware
-from src.users.schemas import InitDataRequest, WebAppRequest
-from src.invitecode.schemas import ReceiveBonusRequest, ReceivedBonusResponse, UserBonusesList
 from src.invitecode.models import InviteCode
-from typing import List
-from database.requests import get_bonus_by_code, set_user_invitecode, get_user_invite_codes
+from src.invitecode.schemas import (ReceiveBonusRequest, ReceivedBonusResponse,
+                                    UserBonusesList)
+from src.users.schemas import InitDataRequest, WebAppRequest
 
 router = APIRouter(prefix="/bonus", tags=['Инвайт коды'])
 
@@ -12,11 +15,11 @@ router = APIRouter(prefix="/bonus", tags=['Инвайт коды'])
 @router.post('/receive')
 @webapp_user_middleware
 async def receive_bonus(request: WebAppRequest, data: ReceiveBonusRequest):
-    bonus = await get_bonus_by_code(code = data.code)
+    bonus = await get_bonus_by_code(code=data.code)
 
     if not bonus:
         raise HTTPException(status_code=400, detail='Code not found')
-    
+
     await set_user_invitecode(user_id=request.webapp_user.id, code=data.code)
 
     return ReceivedBonusResponse(bonus=bonus.bonus, exp=bonus.exp, card_id=bonus.card_id)

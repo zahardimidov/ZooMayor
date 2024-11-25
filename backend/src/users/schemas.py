@@ -1,8 +1,10 @@
-from pydantic import BaseModel, field_validator
-from fastapi import Request, HTTPException
-from src.users.models import UserLanguageEnum
-from typing import List
 from datetime import datetime
+from typing import List
+
+from fastapi import HTTPException, Request
+from pydantic import BaseModel, field_validator
+from src.users.models import UserLanguageEnum
+
 
 class CreateTestUser(BaseModel):
     id: int = 7485502073
@@ -14,6 +16,7 @@ class CreateTestUser(BaseModel):
             raise HTTPException(
                 status_code=400, detail=f'Incorrect language. Available languages {UserLanguageEnum._member_names_}')
         return value
+
 
 class User(BaseModel):
     id: int
@@ -34,8 +37,10 @@ class WebAppRequest(Request):
         self.__dict__.update(kwargs)
         self.webapp_user: User = webapp_user
 
+
 class InitDataRequest(BaseModel):
     initData: str = "{}"
+
 
 class SwitchLangRequest(InitDataRequest):
     lang: str
@@ -47,6 +52,7 @@ class SwitchLangRequest(InitDataRequest):
                 status_code=400, detail=f'Incorrect language. Available languages {UserLanguageEnum._member_names_}')
         return value
 
+
 class UserResponse(BaseModel):
     id: int
     username: str
@@ -56,17 +62,25 @@ class UserResponse(BaseModel):
     energy: int
     balance: int
 
+
 class UserRefResponse(BaseModel):
     link: str
+
 
 class UserSettingsResponse(BaseModel):
     lang: str
     vibration: bool
     dark_mode: bool
 
+
 class FriendResponse(BaseModel):
     username: str
     registered_at: datetime
 
+
 class UserFriendsList(BaseModel):
     friends: List[UserResponse]
+
+
+class BonusPerHour(BaseModel):
+    bonus: int

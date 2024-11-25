@@ -12,7 +12,8 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
-async def run_database():
+async def run_database(reset = False):
     async with engine.begin() as conn:
-        #await conn.run_sync(Base.metadata.drop_all)
+        if reset:
+            await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)

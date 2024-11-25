@@ -1,5 +1,5 @@
 from bot import process_update, run_bot_webhook
-from common import ErrorResponse
+from responses import ErrorResponse
 from config import WEBHOOK_PATH
 from database.admin import init_admin
 from database.session import engine, run_database
@@ -8,10 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
 from middlewares.webapp_user import webapp_user_middleware
-from src.users.api import router as users_router
 from src.cards.api import router as cards_router
-from src.tasks.api import router as tasks_router
 from src.invitecode.api import router as invitecode_router
+from src.tasks.api import router as tasks_router
+from src.users.api import router as users_router
+from src.admin.api import router as admin_router
 from src.users.schemas import WebAppRequest
 
 
@@ -31,6 +32,7 @@ app.include_router(users_router)
 app.include_router(cards_router)
 app.include_router(invitecode_router)
 app.include_router(tasks_router)
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,6 +50,10 @@ app.add_middleware(
 async def home(request: WebAppRequest):
     return f'<div style="display: flex; width: 100vw; height: 100vh; justify-content: center; background-color: #F9F9F9; color: #03527E;"> <b style="margin-top:35vh">Welcome!</b> </div>'
 
+
+#@app.get('/translate', response_model=CardTestResponse)
+#async def translate():
+#    return CardTestResponse(title='hello world', description='hello world', lang='ru')
 
 def prettify_operation_ids(app: FastAPI) -> None:
     """

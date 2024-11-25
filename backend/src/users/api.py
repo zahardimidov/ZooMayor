@@ -1,10 +1,13 @@
 from aiogram import Bot
 from aiogram.utils.deep_linking import create_start_link
-from common import DetailResponse
+from responses import DetailResponse
 from config import BOT_TOKEN, TEST_MODE
-from database.requests import get_user, set_user, get_user_friends
-from fastapi import APIRouter, HTTPException
+from database.requests import (get_all_user_tasks, get_user, get_user_cards,
+                               get_user_friends, set_user)
+from fastapi import APIRouter, HTTPException, Query
 from middlewares.webapp_user import webapp_user_middleware
+from src.cards.models import Card
+from src.tasks.models import Task
 from src.users.schemas import *
 
 router = APIRouter(prefix="/users", tags=['Пользователь'])
@@ -17,6 +20,24 @@ if TEST_MODE:
         await set_user(user_id=data.id, lang=data.lang)
 
         return DetailResponse(detail='User was created')
+
+
+@router.get('/bonus_per_hour', response_model=BonusPerHour)
+async def get_ref_link(user_id=Query(...)):
+    cards = await get_user_cards(user_id=user_id)
+
+    res = 0
+    for card, amount in cards:
+        card: Card
+        res += card.bonus_per_hour * amount
+
+    tasks = await get_all_user_tasks(user_id=user_id)
+    for usertask in tasks:
+        ut: Task = usertask[0]
+        if usertask[1] and ut.bonus_per_hour:
+            res += ut.task.bonus_per_hour
+
+    return BonusPerHour(bonus=res)
 
 
 @router.post('/me', response_model=UserResponse)
@@ -33,6 +54,7 @@ async def get_ref_link(request: WebAppRequest, initData: InitDataRequest):
     link = await create_start_link(Bot(BOT_TOKEN), str(request.webapp_user.id), encode=True)
 
     return UserRefResponse(link=link)
+
 
 @router.post('/me/friends', response_model=UserRefResponse)
 @webapp_user_middleware

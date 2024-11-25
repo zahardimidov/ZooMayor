@@ -1,13 +1,13 @@
+from config import ADMIN_PASSWORD, ADMIN_USERNAME, DEV_MODE, HOST
 from fastapi import Request
+from jinja2 import pass_context
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
-
-from config import ADMIN_PASSWORD, ADMIN_USERNAME, HOST, DEV_MODE
-from src.users.models import User, UserInviteCode, UserTask
 from src.cards.models import Card
-from src.tasks.models import Task
 from src.invitecode.models import InviteCode
-from jinja2 import pass_context
+from src.tasks.models import Task
+from src.users.models import User, UserInviteCode, UserTask
+
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
@@ -45,11 +45,16 @@ class UserAdmin(ModelView, model=User):
     form_widget_args_update = dict(
         id=dict(readonly=True), username=dict(readonly=True))
 
-class CardAdmin(ModelView, model = Card):
-    column_list = [Card.title, Card.bonus, Card.exp, Card.bonus_per_hour, Card.chance, Card.type, Card.section, Card.rating]
+
+class CardAdmin(ModelView, model=Card):
+    column_list = [Card.title, Card.bonus, Card.exp, Card.bonus_per_hour,
+                   Card.chance, Card.type, Card.section, Card.rating]
+
 
 class InviteCodeAdmin(ModelView, model=InviteCode):
-    column_list = [InviteCode.code, InviteCode.exp, InviteCode.bonus, InviteCode.card]
+    column_list = [InviteCode.code, InviteCode.exp,
+                   InviteCode.bonus, InviteCode.card]
+
 
 class UserInviteCodeAdmin(ModelView, model=UserInviteCode):
     column_list = [UserInviteCode.user, UserInviteCode.invitecode]
@@ -58,9 +63,11 @@ class UserInviteCodeAdmin(ModelView, model=UserInviteCode):
 class TaskAdmin(ModelView, model=Task):
     column_list = [Task.id, Task.title, Task.position]
     column_default_sort = "position"
-    
+
+
 class UserTaskAdmin(ModelView, model=UserTask):
     column_list = [UserTask.user, UserTask.task, UserTask.complete]
+
 
 @pass_context
 def my_url_for(context: dict, name: str, /, **path_params) -> str:
@@ -73,13 +80,14 @@ def my_url_for(context: dict, name: str, /, **path_params) -> str:
 
     return url
 
+
 def init_admin(app, engine):
-    admin = Admin(app, engine=engine,
+    admin = Admin(app, engine=engine, base_url='/myadmin',
                   authentication_backend=authentication_backend)
     admin.templates.env.globals['url_for'] = my_url_for
 
-    admin.add_view(UserAdmin) 
-    admin.add_view(CardAdmin) 
+    admin.add_view(UserAdmin)
+    admin.add_view(CardAdmin)
     admin.add_view(InviteCodeAdmin)
     admin.add_view(UserInviteCodeAdmin)
     admin.add_view(TaskAdmin)

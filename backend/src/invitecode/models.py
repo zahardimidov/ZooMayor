@@ -17,6 +17,7 @@ def generate_code():
 
     return code
 
+
 class InviteCode(Base):
     __tablename__ = 'invitecode'
 

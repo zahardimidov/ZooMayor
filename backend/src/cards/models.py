@@ -15,6 +15,7 @@ class CardTypeEnum(enum.Enum):
     citizen = 'citizen'
     city = 'city'
 
+
 class CardSectionEnum(enum.Enum):
     culture = 'culture'
 
@@ -30,7 +31,7 @@ class Card(Base):
     bonus_per_hour = mapped_column(Integer, nullable=True)
     chance = mapped_column(Float, nullable=False)
 
-    price = mapped_column(Integer, nullable=False) # !!! PRICE
+    price = mapped_column(Integer, nullable=False)  # !!! PRICE
 
     description = mapped_column(String)
     type = mapped_column(Enum(CardTypeEnum), nullable=False)
@@ -43,6 +44,6 @@ class Card(Base):
     @property
     def photo(self):
         return CARD_PICTURES_DIR.joinpath(f'{self.id}.png')
-    
+
     def __repr__(self) -> str:
         return f'{self.title} ({self.id})'

@@ -5,10 +5,10 @@ from functools import wraps
 from operator import itemgetter
 from urllib.parse import parse_qsl
 
-from src.users.schemas import InitDataRequest, WebAppRequest
 from config import BOT_TOKEN, TEST_MODE, TEST_USER_ID, WEBHOOK_PATH
 from database.requests import get_user
 from fastapi import HTTPException, Request
+from src.users.schemas import InitDataRequest, WebAppRequest
 
 
 def validate_data(init_data: dict):

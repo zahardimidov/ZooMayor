@@ -1,7 +1,11 @@
-from pydantic import BaseModel
 from typing import List
 
+from pydantic import BaseModel
+from src.users.schemas import InitDataRequest
+
+
 class Task(BaseModel):
+    id: str
     title: str
     photo: str | None
 
@@ -11,5 +15,10 @@ class Task(BaseModel):
 
     complete: bool
 
+
 class TaskList(BaseModel):
     tasks: List[Task]
+
+
+class CompleteTask(InitDataRequest):
+    task_id: str

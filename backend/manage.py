@@ -10,9 +10,10 @@ def main():
 
     # Add an argument for the command
     parser.add_argument('command', type=str, help='The command to execute')
-    
+
     # Add an optional argument for additional parameters
-    parser.add_argument('name', nargs=argparse.REMAINDER, help='Additional parameters for the command')
+    parser.add_argument('name', nargs=argparse.REMAINDER,
+                        help='Additional parameters for the command')
 
     # Parse the arguments
     args = parser.parse_args()
@@ -42,6 +43,7 @@ def main():
                 )
         else:
             raise Exception('App was already created')
+
 
 if __name__ == '__main__':
     main()

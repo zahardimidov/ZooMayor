@@ -1,12 +1,13 @@
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from database.session import async_session
 from fastapi import HTTPException
-from sqlalchemy import select, update, and_
+from sqlalchemy import and_, select, update
 from src.cards.models import Card
 from src.invitecode.models import InviteCode
-from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask
 from src.tasks.models import Task
+from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask
 
 
 async def get_user(user_id) -> User:
@@ -21,6 +22,13 @@ async def get_card_by_id(card_id) -> Card:
         card = await session.scalar(select(Card).where(Card.id == card_id))
 
         return card
+    
+
+async def get_task_by_id(task_id) -> Task:
+    async with async_session() as session:
+        task = await session.scalar(select(Task).where(Task.id == task_id))
+
+        return task
 
 
 async def set_user(user_id, **kwargs) -> User:
@@ -187,11 +195,40 @@ async def get_all_user_tasks(user_id):
         for task in tasks.all():
             usertask = await session.scalar(select(UserTask).where(UserTask.user_id == user_id, UserTask.task_id == task.id))
 
-            print(usertask, task.title)
-
             if usertask:
                 res.append([task, usertask.complete, usertask.created_at])
             else:
                 res.append([task, False, None])
 
         return sorted(res, key=lambda x: (-x[1], x[0].position))
+
+
+async def set_user_task(user_id, task_id):
+    async with async_session() as session:
+        userTask = await session.scalar(select(UserTask).where(UserTask.user_id == user_id, UserTask.task_id == task_id))
+
+        if userTask:
+            if userTask.task.timer is None or (userTask.complete and not (datetime.now(timezone.utc) - timedelta(minutes=userTask.task.timer) >= userTask.created_at)):
+                raise HTTPException(
+                    status_code=400, detail='You could not complete this task right now')
+            else:
+                userTask.created_at = datetime.now(timezone.utc)
+                userTask.complete = True
+        else:
+            userTask = UserTask(user_id=user_id, task_id=task_id)
+            session.add(userTask)
+
+        await session.commit()
+        await session.refresh(userTask)
+
+        await user_receive_bonuses(user_id=user_id, **userTask.task.__dict__)
+
+async def create_task(title, **kwargs):
+    async with async_session() as session:
+        task = Task(title = title, **kwargs)
+        session.add(task)
+
+        await session.commit()
+        await session.refresh(task)
+
+        return task

@@ -2,11 +2,12 @@ import enum
 from datetime import datetime, timezone
 
 from database.session import Base
-from sqlalchemy import BigInteger, Boolean, Enum, Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import (BigInteger, Boolean, DateTime, Enum, ForeignKey,
+                        Integer, String)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.cards.models import Card
-from src.tasks.models import Task
 from src.invitecode.models import InviteCode
+from src.tasks.models import Task
 
 
 class UserLanguageEnum(enum.Enum):
@@ -15,6 +16,7 @@ class UserLanguageEnum(enum.Enum):
     it = 'italian'
     es = 'spanish'
     de = 'german'
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -31,24 +33,29 @@ class User(Base):
     vibration = mapped_column(Boolean, default=True)
     dark_mode = mapped_column(Boolean, default=True)
 
-    registered_at = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    registered_at = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc))
 
     @property
     def progress(self):
         return ''
-    
+
     def __str__(self) -> str:
         return self.username
 
 
 class UserRef(Base):
     __tablename__ = 'userref'
-    
-    referral_id = mapped_column(ForeignKey('users.id'), primary_key=True) # тот кого вы пригласили  
-    referral: Mapped['User'] = relationship('User', foreign_keys=[referral_id], backref='referrals')
+
+    referral_id = mapped_column(ForeignKey(
+        'users.id'), primary_key=True)  # тот кого вы пригласили
+    referral: Mapped['User'] = relationship(
+        'User', foreign_keys=[referral_id], backref='referrals')
 
     referrer_id = mapped_column(ForeignKey('users.id'), primary_key=True)
-    referrer: Mapped['User'] = relationship('User', foreign_keys=[referrer_id], backref='referrers') #тот, кто пригласил, называется реферером.
+    # тот, кто пригласил, называется реферером.
+    referrer: Mapped['User'] = relationship(
+        'User', foreign_keys=[referrer_id], backref='referrers')
 
     bonus = mapped_column(Integer, default=0)
     exp = mapped_column(Integer, default=0)
@@ -85,7 +92,7 @@ class UserInviteCode(Base):
 
     def __str__(self) -> str:
         return f'{self.user} - {self.invitecode}'
-    
+
 
 class UserTask(Base):
     __tablename__ = 'usertask'
@@ -98,6 +105,6 @@ class UserTask(Base):
         'tasks.id', ondelete='CASCADE'), primary_key=True)
     task: Mapped['Task'] = relationship(lazy='subquery')
 
-    created_at = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc))
     complete = mapped_column(Boolean, default=True)
-    
