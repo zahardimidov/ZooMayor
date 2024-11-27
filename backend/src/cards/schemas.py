@@ -3,7 +3,7 @@ from typing import List
 from fastapi import HTTPException
 from pydantic import BaseModel, field_validator
 from src.users.schemas import InitDataRequest
-from responses import TranslatableResponse
+from src.ext.responses import TranslatableResponse
 
 
 class CardResponse(TranslatableResponse):

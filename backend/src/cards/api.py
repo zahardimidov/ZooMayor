@@ -1,4 +1,4 @@
-from responses import DetailResponse
+from src.ext.responses import DetailResponse
 from database.requests import (get_card_by_id, get_user_cards, search_cards,
                                set_user, set_user_card, get_random_card_id)
 from fastapi import APIRouter, HTTPException, Query, Response
@@ -7,7 +7,7 @@ from src.cards.schemas import (BuyCardRequest, CardResponse,
                                SearchCardResponse, UserCardList, GameResponse, ReceiveGameCard,
                                UserCardResponse)
 from src.users.schemas import InitDataRequest, WebAppRequest
-from config import redis
+from src.ext.utils import async_redis
 import json
 from src.invitecode.models import generate_code
 
@@ -41,14 +41,14 @@ async def game(request: WebAppRequest, init_data: InitDataRequest):
     
     game_id = "game_"+generate_code()
     
-    await redis.set(game_id, json.dumps(game_cards), ex=300)
+    await async_redis.set(game_id, json.dumps(game_cards), ex=300)
 
     return GameResponse(game_id=game_id)
 
 @router.post('/receive_card', response_model=CardResponse)
 @webapp_user_middleware
 async def receive_game_card(request: WebAppRequest, data: ReceiveGameCard):
-    json_game_cards = await redis.get(data.game_id)
+    json_game_cards = await async_redis.get(data.game_id)
 
     if not json_game_cards:
         raise HTTPException(status_code=400, detail='Game not found')
@@ -60,7 +60,7 @@ async def receive_game_card(request: WebAppRequest, data: ReceiveGameCard):
     if not card:
         raise HTTPException(status_code=400, detail='Card not found')
     
-    await redis.delete(data.game_id)
+    await async_redis.delete(data.game_id)
 
     await set_user_card(user_id=request.webapp_user.id, card_id=card.id)
 

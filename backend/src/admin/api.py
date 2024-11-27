@@ -1,4 +1,4 @@
-from responses import DetailResponse
+from src.ext.responses import DetailResponse
 from database.requests import create_task
 from fastapi import APIRouter
 from src.admin.schemas import CreateTask, CreateTaskResponse

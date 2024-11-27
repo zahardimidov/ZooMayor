@@ -1,6 +1,6 @@
 from aiogram import Bot
 from aiogram.utils.deep_linking import create_start_link
-from responses import DetailResponse
+from src.ext.responses import DetailResponse
 from config import BOT_TOKEN, TEST_MODE
 from database.requests import (get_all_user_tasks, get_user, get_user_cards,
                                get_user_friends, set_user)

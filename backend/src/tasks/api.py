@@ -1,4 +1,4 @@
-from responses import DetailResponse
+from src.ext.responses import DetailResponse
 from database.requests import get_all_user_tasks, set_user_task, get_task_by_id
 from fastapi import APIRouter, HTTPException
 from middlewares.webapp_user import webapp_user_middleware

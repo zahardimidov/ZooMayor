@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from redis.asyncio import from_url
 
 load_dotenv()
 
@@ -16,7 +15,6 @@ def boolean(value: str | bool | int):
         return False if value == "0" else True
 
     return {"false": False, "true": True}.get(value, bool(value))
-
 
 def env(key, default=None):
     value = os.environ.get(key)
@@ -56,5 +54,3 @@ WEBHOOK_PATH = 'webhook'
 
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = 'qwerty'
-
-redis = from_url(f'redis://{REDIS_HOST}')

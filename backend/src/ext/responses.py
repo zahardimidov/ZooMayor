@@ -1,6 +1,6 @@
 from pydantic import BaseModel, model_serializer
 from config import DEFAULT_LANG
-from translate import translate
+from src.ext.translate import translate
 
 class ErrorResponse(BaseModel):
     detail: str

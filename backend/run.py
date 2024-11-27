@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
 from middlewares.webapp_user import webapp_user_middleware
-from responses import ErrorResponse
+from src.ext.responses import ErrorResponse
 from src.admin.api import router as admin_router
 from src.cards.api import router as cards_router
 from src.invitecode.api import router as invitecode_router
