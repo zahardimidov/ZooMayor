@@ -27,6 +27,7 @@ source venv/bin/activate
 
 3. Install required packages:
 ```bash
+pip install fastapi sqlalchemy sqladmin aiogram asyncpg greenlet itsdangerous
 pip install -r requirements.txt
 ```
 
@@ -45,7 +46,7 @@ To check test coverage, follow these steps:
 
 1. Install the coverage package:
 ```bash
-pip install pytest-cov
+pip install pytest-cov httpx==0.27.2
 ```
 
 2. Run tests with coverage:
@@ -173,6 +174,14 @@ jobs:
         with:
           python-version: '3.11'
           architecture: 'x64'
+
+      # Установка Redis
+      - name: Install Redis
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          sudo service redis-server start
+          
       - name: Install requirements
         run: pip install -r backend/requirements.txt
       - name: Run tests
