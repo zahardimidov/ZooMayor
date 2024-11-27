@@ -26,12 +26,12 @@ frozenlist==1.4.1
 fsspec==2024.9.0
 ftfy==6.0.3
 greenlet==3.0.3
-h11==0.9.0
+h11==0.14.0
 h2==3.2.0
 hpack==3.0.0
 hstspreload==2024.11.1
-httpcore==0.9.1
-httpx==0.13.3
+httpcore==1.0.7
+httpx==0.27.2
 huggingface-hub==0.26.2
 hyperframe==5.2.0
 idna==2.10
