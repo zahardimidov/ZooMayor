@@ -3,12 +3,12 @@ from typing import List
 
 from database.session import async_session
 from fastapi import HTTPException
-from sqlalchemy import and_, select, update
+from sqlalchemy import and_, func, select, update
 from src.cards.models import Card
 from src.invitecode.models import InviteCode
 from src.tasks.models import Task
 from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask
-
+from random import random
 
 async def get_user(user_id) -> User:
     async with async_session() as session:
@@ -232,3 +232,34 @@ async def create_task(title, **kwargs):
         await session.refresh(task)
 
         return task
+    
+async def get_random_card_id():
+    async with async_session() as session:
+        result = await session.execute(select(func.sum(Card.chance).label('total_percentage')))
+        target = random() * result.one()[0]
+
+        print(target)
+
+        cumulative_subquery = (
+            select(
+                Card.id,
+                Card.title,
+                Card.chance,
+                func.sum(Card.chance).over(order_by=Card.chance).label('cumulative_percentage')
+            )
+            .subquery()
+        )
+
+        # Основной запрос с фильтрацией по кумулятивному проценту
+        query = (
+            select(cumulative_subquery)
+            .where(cumulative_subquery.c.cumulative_percentage >= target)
+            .order_by(cumulative_subquery.c.chance)
+            .limit(1)
+        )
+
+        # Выполняем запрос и получаем результат
+        result = await session.execute(query)
+        card_id = result.one()[0]
+
+        return card_id

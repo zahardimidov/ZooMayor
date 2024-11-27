@@ -49,6 +49,8 @@ class UserAdmin(ModelView, model=User):
 class CardAdmin(ModelView, model=Card):
     column_list = [Card.title, Card.bonus, Card.exp, Card.bonus_per_hour,
                    Card.chance, Card.type, Card.section, Card.rating]
+    
+    column_default_sort = 'chance'
 
 
 class InviteCodeAdmin(ModelView, model=InviteCode):

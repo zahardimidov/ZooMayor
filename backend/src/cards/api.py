@@ -1,12 +1,15 @@
 from responses import DetailResponse
 from database.requests import (get_card_by_id, get_user_cards, search_cards,
-                               set_user, set_user_card)
+                               set_user, set_user_card, get_random_card_id)
 from fastapi import APIRouter, HTTPException, Query, Response
 from middlewares.webapp_user import webapp_user_middleware
 from src.cards.schemas import (BuyCardRequest, CardResponse,
-                               SearchCardResponse, UserCardList,
+                               SearchCardResponse, UserCardList, GameResponse, ReceiveGameCard,
                                UserCardResponse)
 from src.users.schemas import InitDataRequest, WebAppRequest
+from config import redis
+import json
+from src.invitecode.models import generate_code
 
 router = APIRouter(prefix="/cards", tags=['Карты'])
 
@@ -26,13 +29,51 @@ async def search(
     )
 
 
+@router.post('/game', response_model=GameResponse)
+@webapp_user_middleware
+async def game(request: WebAppRequest, init_data: InitDataRequest):
+    need_energy = 10
+    if request.webapp_user.energy < need_energy:
+        raise HTTPException(status_code=400, detail='You do not have enough enery')
+    
+    game_cards = [await get_random_card_id() for _ in range(3)]
+    await set_user(user_id=request.webapp_user.id, energy = request.webapp_user.energy - need_energy)
+    
+    game_id = "game_"+generate_code()
+    
+    await redis.set(game_id, json.dumps(game_cards), ex=300)
+
+    return GameResponse(game_id=game_id)
+
+@router.post('/receive_card', response_model=CardResponse)
+@webapp_user_middleware
+async def receive_game_card(request: WebAppRequest, data: ReceiveGameCard):
+    json_game_cards = await redis.get(data.game_id)
+
+    if not json_game_cards:
+        raise HTTPException(status_code=400, detail='Game not found')
+    
+    game_cards = json.loads(json_game_cards)
+    
+    card = await get_card_by_id(game_cards[data.card_ind])
+
+    if not card:
+        raise HTTPException(status_code=400, detail='Card not found')
+    
+    await redis.delete(data.game_id)
+
+    await set_user_card(user_id=request.webapp_user.id, card_id=card.id)
+
+    return CardResponse(**card.__dict__)
+
+
 @router.get('/get', response_model=CardResponse)
 async def get_card(
     card_id: str = Query()
 ):
     card = await get_card_by_id(card_id=card_id)
 
-    return CardResponse(**card.__dict__, language='en')
+    return CardResponse(**card.__dict__)
 
 
 @router.post('/buy', response_model=DetailResponse)

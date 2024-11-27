@@ -1,6 +1,7 @@
 from typing import List
 
-from pydantic import BaseModel
+from fastapi import HTTPException
+from pydantic import BaseModel, field_validator
 from src.users.schemas import InitDataRequest
 from responses import TranslatableResponse
 
@@ -8,6 +9,7 @@ from responses import TranslatableResponse
 class CardResponse(TranslatableResponse):
     id: str
     title: str
+    photo: str | None
     bonus: int
     exp: int
     bonus_per_hour: int | None
@@ -37,3 +39,17 @@ class UserCardResponse(BaseModel):
 
 class UserCardList(BaseModel):
     cards: List[UserCardResponse]
+
+
+class GameResponse(BaseModel):
+    game_id: str
+
+class ReceiveGameCard(InitDataRequest):
+    game_id: str
+    card_ind: int
+
+    @field_validator("card_ind", mode='before')
+    def validate_card_ind(cls, value: str):
+        if not value in range(3):
+            raise HTTPException(status_code=400, detail='Unsupported index')
+        return value

@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from redis.asyncio import from_url
 
 load_dotenv()
 
@@ -47,10 +48,13 @@ PORT = 4550
 HOST = env('HOST', 'https://2771-2a01-4f8-c012-3738-00-1.ngrok-free.app')
 BOT_TOKEN = env('BOT_TOKEN', '7489777184:AAHk-tgEypNOTMa3gSW72c10FsgELmPH99o')
 ENGINE = env('ENGINE', "sqlite+aiosqlite:///./database/database.db")
+REDIS_HOST = env('REDIS_HOST', "localhost")
 
 WEBAPP_URL = HOST
 WEBHOOK_HOST = HOST
 WEBHOOK_PATH = 'webhook'
 
-ADMIN_USERNAME = ''
-ADMIN_PASSWORD = ''
+ADMIN_USERNAME = 'admin'
+ADMIN_PASSWORD = 'qwerty'
+
+redis = from_url(f'redis://{REDIS_HOST}')
