@@ -46,7 +46,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /home/project_dir
+            cd /home/zoomayor
             git pull https://zahardimidov:${{secrets.REPO_TOKEN}}@github.com/zahardimidov/${{secrets.REPO_NAME}}.git deploy
             docker compose down
             docker compose --env-file .devenv up --build -d
