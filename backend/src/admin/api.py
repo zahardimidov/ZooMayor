@@ -3,7 +3,7 @@ from database.requests import create_task
 from fastapi import APIRouter
 from src.admin.schemas import CreateTask, CreateTaskResponse
 
-router = APIRouter(prefix="/admin/api")
+router = APIRouter(prefix="/admin/api", tags=['Админка'])
 
 
 @router.post('/create_task', response_model=CreateTaskResponse)

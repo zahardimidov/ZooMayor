@@ -13,7 +13,7 @@ from src.users.schemas import *
 router = APIRouter(prefix="/users", tags=['Пользователь'])
 
 if TEST_MODE:
-    @router.post('/create_test_user')
+    @router.post('/create_test_user', description='Создание пользователя (только для тестирования)')
     async def create_test_user(data: CreateTestUser):
         if await get_user(user_id=data.id):
             raise HTTPException(status_code=400, detail='User already exists')
@@ -22,7 +22,7 @@ if TEST_MODE:
         return DetailResponse(detail='User was created')
 
 
-@router.get('/bonus_per_hour', response_model=BonusPerHour)
+@router.get('/bonus_per_hour', response_model=BonusPerHour, description='Получить доход в час пользователя')
 async def get_ref_link(user_id=Query(...)):
     cards = await get_user_cards(user_id=user_id)
 
@@ -40,7 +40,7 @@ async def get_ref_link(user_id=Query(...)):
     return BonusPerHour(bonus=res)
 
 
-@router.post('/me', response_model=UserResponse)
+@router.post('/me', response_model=UserResponse, description='Получить информацию о своем профиле')
 @webapp_user_middleware
 async def get_me(request: WebAppRequest, init_data: InitDataRequest):
     user = request.webapp_user
@@ -48,7 +48,7 @@ async def get_me(request: WebAppRequest, init_data: InitDataRequest):
     return user
 
 
-@router.post('/me/ref', response_model=UserRefResponse)
+@router.post('/me/ref', response_model=UserRefResponse, description='Получить реферальную ссылку')
 @webapp_user_middleware
 async def get_ref_link(request: WebAppRequest, initData: InitDataRequest):
     link = await create_start_link(Bot(BOT_TOKEN), str(request.webapp_user.id), encode=True)
@@ -56,7 +56,7 @@ async def get_ref_link(request: WebAppRequest, initData: InitDataRequest):
     return UserRefResponse(link=link)
 
 
-@router.post('/me/friends', response_model=UserRefResponse)
+@router.post('/me/friends', response_model=UserRefResponse, description='Получить список своих рефералов')
 @webapp_user_middleware
 async def get_friends(request: WebAppRequest, initData: InitDataRequest):
     friends = await get_user_friends(user_id=request.webapp_user.id)
@@ -64,7 +64,7 @@ async def get_friends(request: WebAppRequest, initData: InitDataRequest):
     return UserFriendsList(friends=friends)
 
 
-@router.post('/me/settings', response_model=UserSettingsResponse)
+@router.post('/me/settings', response_model=UserSettingsResponse, description='Получить свои текущие настройки')
 @webapp_user_middleware
 async def get_me_settings(request: WebAppRequest, init_data: InitDataRequest):
     user = request.webapp_user
@@ -76,7 +76,7 @@ async def get_me_settings(request: WebAppRequest, init_data: InitDataRequest):
     )
 
 
-@router.post('/me/settings/switch-lang')
+@router.post('/me/settings/switch-lang', response_model=DetailResponse, description='Переключение языка')
 @webapp_user_middleware
 async def switch_lang(request: WebAppRequest, data: SwitchLangRequest):
     user = request.webapp_user
@@ -86,7 +86,7 @@ async def switch_lang(request: WebAppRequest, data: SwitchLangRequest):
     return DetailResponse(detail=f'Language was changed to {data.lang}')
 
 
-@router.post('/me/settings/switch-mode')
+@router.post('/me/settings/switch-mode', response_model=DetailResponse, description='Переклюить тему')
 @webapp_user_middleware
 async def switch_mode(request: WebAppRequest, init_data: InitDataRequest):
     user = request.webapp_user

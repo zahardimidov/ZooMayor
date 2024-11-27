@@ -8,7 +8,7 @@ from src.users.schemas import InitDataRequest, WebAppRequest
 router = APIRouter(prefix="/tasks", tags=['Задания'])
 
 
-@router.post('/all', response_model=TaskList)
+@router.post('/all', response_model=TaskList, description='Получить список заданий')
 @webapp_user_middleware
 async def user_tasks(request: WebAppRequest, init_data: InitDataRequest):
     tasks = await get_all_user_tasks(user_id=request.webapp_user.id)
@@ -22,7 +22,7 @@ async def user_tasks(request: WebAppRequest, init_data: InitDataRequest):
     return TaskList(tasks=response)
 
 
-@router.post('/complete', response_model=DetailResponse)
+@router.post('/complete', response_model=DetailResponse, description='Выполнить задание')
 @webapp_user_middleware
 async def complete_task(request: WebAppRequest, data: CompleteTask):
     task = await get_task_by_id(task_id=data.task_id)

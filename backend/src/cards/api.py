@@ -14,7 +14,7 @@ from src.invitecode.models import generate_code
 router = APIRouter(prefix="/cards", tags=['Карты'])
 
 
-@router.get('/search', response_model=SearchCardResponse)
+@router.get('/search', response_model=SearchCardResponse, description='Поиск карт в магазине')
 async def search(
     query: str = Query(default=None),
     minprice: int = Query(default=None),
@@ -29,7 +29,7 @@ async def search(
     )
 
 
-@router.post('/game', response_model=GameResponse)
+@router.post('/game', response_model=GameResponse, description='Создать игру и получить ее id')
 @webapp_user_middleware
 async def game(request: WebAppRequest, init_data: InitDataRequest):
     need_energy = 10
@@ -45,7 +45,7 @@ async def game(request: WebAppRequest, init_data: InitDataRequest):
 
     return GameResponse(game_id=game_id)
 
-@router.post('/receive_card', response_model=CardResponse)
+@router.post('/receive_card', response_model=CardResponse, description='Выбрать карту из игры по индексу')
 @webapp_user_middleware
 async def receive_game_card(request: WebAppRequest, data: ReceiveGameCard):
     json_game_cards = await async_redis.get(data.game_id)
@@ -67,7 +67,7 @@ async def receive_game_card(request: WebAppRequest, data: ReceiveGameCard):
     return CardResponse(**card.__dict__)
 
 
-@router.get('/get', response_model=CardResponse)
+@router.get('/get', response_model=CardResponse, description='Получить подробную информацию о карте')
 async def get_card(
     card_id: str = Query()
 ):
@@ -76,7 +76,7 @@ async def get_card(
     return CardResponse(**card.__dict__)
 
 
-@router.post('/buy', response_model=DetailResponse)
+@router.post('/buy', response_model=DetailResponse, description='Купить карту')
 @webapp_user_middleware
 async def buy_card(request: WebAppRequest, data: BuyCardRequest):
     user = request.webapp_user
@@ -96,7 +96,7 @@ async def buy_card(request: WebAppRequest, data: BuyCardRequest):
     return DetailResponse(detail='Card was bought')
 
 
-@router.post('/my', response_model=UserCardList)
+@router.post('/my', response_model=UserCardList, description='Список всех карт пользователя')
 @webapp_user_middleware
 async def my(request: WebAppRequest, data: InitDataRequest):
     cards = await get_user_cards(user_id=request.webapp_user.id)

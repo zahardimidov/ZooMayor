@@ -12,7 +12,7 @@ from src.users.schemas import InitDataRequest, WebAppRequest
 router = APIRouter(prefix="/bonus", tags=['Инвайт коды'])
 
 
-@router.post('/receive')
+@router.post('/receive', response_model=ReceivedBonusResponse, description='Получить бонус за код')
 @webapp_user_middleware
 async def receive_bonus(request: WebAppRequest, data: ReceiveBonusRequest):
     bonus = await get_bonus_by_code(code=data.code)
@@ -25,7 +25,7 @@ async def receive_bonus(request: WebAppRequest, data: ReceiveBonusRequest):
     return ReceivedBonusResponse(bonus=bonus.bonus, exp=bonus.exp, card_id=bonus.card_id)
 
 
-@router.post('/received', response_model=UserBonusesList)
+@router.post('/received', response_model=UserBonusesList, description='Список введенных ранее кодов')
 @webapp_user_middleware
 async def received_bonuses(request: WebAppRequest, data: InitDataRequest):
     bonuses: List[InviteCode] = await get_user_invite_codes(user_id=request.webapp_user.id)
