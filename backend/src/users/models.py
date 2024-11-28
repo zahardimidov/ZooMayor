@@ -34,7 +34,10 @@ class User(Base):
     dark_mode = mapped_column(Boolean, default=True)
 
     registered_at = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc))
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        # onupdate=lambda: datetime.now(timezone.utc)
+    )
 
     @property
     def progress(self):
@@ -47,15 +50,21 @@ class User(Base):
 class UserRef(Base):
     __tablename__ = 'userref'
 
-    referral_id = mapped_column(ForeignKey(
-        'users.id'), primary_key=True)  # тот кого вы пригласили
+    referral_id = mapped_column(ForeignKey('users.id'), primary_key=True)
     referral: Mapped['User'] = relationship(
-        'User', foreign_keys=[referral_id], backref='referrals')
+        'User',
+        foreign_keys=[referral_id],
+        backref='referrals',
+        primaryjoin='UserRef.referral_id == User.id'
+    )
 
     referrer_id = mapped_column(ForeignKey('users.id'), primary_key=True)
-    # тот, кто пригласил, называется реферером.
     referrer: Mapped['User'] = relationship(
-        'User', foreign_keys=[referrer_id], backref='referrers')
+        'User',
+        foreign_keys=[referrer_id],
+        backref='referrers',
+        primaryjoin='UserRef.referrer_id == User.id'
+    )
 
     bonus = mapped_column(Integer, default=0)
     exp = mapped_column(Integer, default=0)

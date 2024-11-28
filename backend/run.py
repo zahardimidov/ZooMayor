@@ -1,19 +1,17 @@
 from bot import process_update, run_bot_webhook
-from config import WEBHOOK_PATH
+from config import WEBHOOK_PATH, PORT
 from database.admin import init_admin
 from database.session import engine, run_database
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
-from middlewares.webapp_user import webapp_user_middleware
 from src.ext.responses import ErrorResponse
 from src.admin.api import router as admin_router
 from src.cards.api import router as cards_router
 from src.invitecode.api import router as invitecode_router
 from src.tasks.api import router as tasks_router
 from src.users.api import router as users_router
-from src.users.schemas import WebAppRequest
 
 
 async def on_startup(app: FastAPI):
@@ -46,8 +44,7 @@ app.add_middleware(
 
 
 @app.get('/', response_class=HTMLResponse, include_in_schema=False)
-@webapp_user_middleware
-async def home(request: WebAppRequest):
+async def home(request):
     return f'<div style="display: flex; width: 100vw; height: 100vh; justify-content: center; background-color: #F9F9F9; color: #03527E;"> <b style="margin-top:35vh">Welcome!</b> </div>'
 
 
@@ -69,4 +66,4 @@ prettify_operation_ids(app)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=4500, forwarded_allow_ips='*')
+    uvicorn.run(app, host="0.0.0.0", port=PORT, forwarded_allow_ips='*')

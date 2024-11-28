@@ -40,7 +40,7 @@ class RegisterUserMiddleware(BaseMiddleware):
 
         if not user:
             referrer = await extract_referrer(event.text)
-            user = await set_user(user_id=event.from_user.id, username=event.from_user.username)
+            user = await set_user(user_id=event.from_user.id, username=event.from_user.username, lang = event.from_user.language_code)
 
             if referrer:
                 await set_referral(referrer_id=referrer.id, referral_id=user.id, bonus=1000, exp=500)

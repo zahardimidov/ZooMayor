@@ -2,14 +2,12 @@ from typing import List
 
 from fastapi import HTTPException
 from pydantic import BaseModel, field_validator
-from src.users.schemas import InitDataRequest
 from src.ext.responses import TranslatableResponse
-
 
 class CardResponse(TranslatableResponse):
     id: str
     title: str
-    photo: str | None
+    photo: str | None = None
     bonus: int
     exp: int
     bonus_per_hour: int | None
@@ -27,7 +25,7 @@ class SearchCardResponse(BaseModel):
     cards: List[CardResponse]
 
 
-class BuyCardRequest(InitDataRequest):
+class BuyCardRequest(BaseModel):
     card_id: str
 
 
@@ -44,7 +42,8 @@ class UserCardList(BaseModel):
 class GameResponse(BaseModel):
     game_id: str
 
-class ReceiveGameCard(InitDataRequest):
+
+class ReceiveGameCard(BaseModel):
     game_id: str
     card_ind: int
 

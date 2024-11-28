@@ -233,6 +233,16 @@ async def create_task(title, **kwargs):
 
         return task
     
+async def create_card(title, **kwargs):
+    async with async_session() as session:
+        card = Card(title = title, **kwargs)
+        session.add(card)
+
+        await session.commit()
+        await session.refresh(card)
+
+        return card
+    
 async def get_random_card_id():
     async with async_session() as session:
         result = await session.execute(select(func.sum(Card.chance).label('total_percentage')))

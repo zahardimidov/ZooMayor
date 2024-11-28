@@ -1,10 +1,9 @@
 from typing import List
 
 from pydantic import BaseModel
-from src.users.schemas import InitDataRequest
 
 
-class ReceiveBonusRequest(InitDataRequest):
+class ReceiveBonusRequest(BaseModel):
     code: str
 
 

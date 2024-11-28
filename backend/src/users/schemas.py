@@ -1,13 +1,15 @@
 from datetime import datetime
 from typing import List
 
+from config import TEST_USER
 from fastapi import HTTPException, Request
 from pydantic import BaseModel, field_validator
 from src.users.models import UserLanguageEnum
 
 
 class CreateTestUser(BaseModel):
-    id: int = 7485502073
+    id: int = TEST_USER['id']
+    username: str = 'Guest'
     lang: str = "ru"
 
     @field_validator("lang", mode='before')
@@ -16,6 +18,15 @@ class CreateTestUser(BaseModel):
             raise HTTPException(
                 status_code=400, detail=f'Incorrect language. Available languages {UserLanguageEnum._member_names_}')
         return value
+
+
+class InitDataRequest(BaseModel):
+    initData: str = "{}"
+
+
+class AuthInitDataResponse(BaseModel):
+    access_token: str
+    token_type: str = 'bearer'
 
 
 class User(BaseModel):
@@ -32,17 +43,7 @@ class User(BaseModel):
     dark_mode: bool
 
 
-class WebAppRequest(Request):
-    def __init__(self, webapp_user, **kwargs):
-        self.__dict__.update(kwargs)
-        self.webapp_user: User = webapp_user
-
-
-class InitDataRequest(BaseModel):
-    initData: str = "{}"
-
-
-class SwitchLangRequest(InitDataRequest):
+class SwitchLangRequest(BaseModel):
     lang: str
 
     @field_validator("lang", mode='before')

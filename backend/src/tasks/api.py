@@ -1,17 +1,15 @@
-from src.ext.responses import DetailResponse
-from database.requests import get_all_user_tasks, set_user_task, get_task_by_id
+from database.requests import get_all_user_tasks, get_task_by_id, set_user_task
 from fastapi import APIRouter, HTTPException
-from middlewares.webapp_user import webapp_user_middleware
+from src.ext.dependencies import WebAppUser
+from src.ext.responses import DetailResponse
 from src.tasks.schemas import CompleteTask, Task, TaskList
-from src.users.schemas import InitDataRequest, WebAppRequest
 
 router = APIRouter(prefix="/tasks", tags=['Задания'])
 
 
-@router.post('/all', response_model=TaskList, description='Получить список заданий')
-@webapp_user_middleware
-async def user_tasks(request: WebAppRequest, init_data: InitDataRequest):
-    tasks = await get_all_user_tasks(user_id=request.webapp_user.id)
+@router.get('/all', response_model=TaskList, description='Получить список заданий')
+async def user_tasks(user: WebAppUser):
+    tasks = await get_all_user_tasks(user_id=user.id)
 
     response = []
     for task in tasks:
@@ -23,13 +21,12 @@ async def user_tasks(request: WebAppRequest, init_data: InitDataRequest):
 
 
 @router.post('/complete', response_model=DetailResponse, description='Выполнить задание')
-@webapp_user_middleware
-async def complete_task(request: WebAppRequest, data: CompleteTask):
+async def complete_task(data: CompleteTask, user: WebAppUser):
     task = await get_task_by_id(task_id=data.task_id)
 
     if not task:
         raise HTTPException(status_code=404, detail='Task not found')
 
-    await set_user_task(user_id=request.webapp_user.id, task_id=data.task_id)
+    await set_user_task(user_id=user.id, task_id=data.task_id)
 
     return DetailResponse(detail='Task was completed')

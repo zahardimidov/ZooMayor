@@ -39,12 +39,18 @@ CARD_PICTURES_DIR = BASE_DIR.joinpath('/media/cards/')
 DEV_MODE = boolean(env('DEVMODE', False))
 
 TEST_MODE = not DEV_MODE
-TEST_USER_ID = 7485502073
+TEST_USER = {
+    "id": 7485502073,
+    "first_name": "Test",
+    "last_name": "User",
+    "username": "TestUser",
+    "photo_url": "https://t.me/i/userpic/320/7biCnCzgbpgB0jxJOROndcn3W8rgTSN1LrXDJg8vZXo.svg"
+}
 
 PORT = 4550
 
-HOST = env('HOST', 'https://2771-2a01-4f8-c012-3738-00-1.ngrok-free.app')
-BOT_TOKEN = env('BOT_TOKEN', '7489777184:AAHk-tgEypNOTMa3gSW72c10FsgELmPH99o')
+HOST = env('HOST', 'https://1c27-178-47-140-82.ngrok-free.app')
+BOT_TOKEN = env('BOT_TOKEN', '5166691505:AAEbw80sx5EGT7pB9eT954PTO3WtowUMEME')
 ENGINE = env('ENGINE', "sqlite+aiosqlite:///./database/database.db")
 REDIS_HOST = env('REDIS_HOST', "localhost")
 

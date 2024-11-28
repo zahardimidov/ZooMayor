@@ -1,7 +1,6 @@
 from typing import List
 
 from pydantic import BaseModel
-from src.users.schemas import InitDataRequest
 
 
 class Task(BaseModel):
@@ -20,5 +19,5 @@ class TaskList(BaseModel):
     tasks: List[Task]
 
 
-class CompleteTask(InitDataRequest):
+class CompleteTask(BaseModel):
     task_id: str
