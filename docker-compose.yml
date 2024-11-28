@@ -4,25 +4,25 @@ networks:
   dev:
 
 services:
-  nginx:
-    image: nginx:stable-alpine
-    ports:
-      - "80:80"
-    volumes:
-      - './nginx.conf:/etc/nginx/nginx.conf'
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - dev
+  #nginx:
+  #  image: nginx:stable-alpine
+  #  ports:
+  #    - "80:80"
+  #  volumes:
+  #    - './nginx.conf:/etc/nginx/nginx.conf'
+  #  depends_on:
+  #    - backend
+  #    - frontend
+  #  networks:
+  #    - dev
       
-  frontend:
-    build:
-      context: ./frontend
-    networks:
-      - dev
-    ports:
-      - "3000:3000"
+  #frontend:
+  #  build:
+  #    context: ./frontend
+  #  networks:
+  #    - dev
+  #  ports:
+  #    - "3000:3000"
   backend:
     restart: unless-stopped
 
