@@ -75,10 +75,10 @@ async def get_user_cards(user_id):
 
 async def search_cards(query, minprice, maxprice, offset, limit) -> List[Card]:
     async with async_session() as session:
-        stmt = select(Card).outerjoin(GroupCard, Card.id == GroupCard.card_id)
+        stmt = select(Card).outerjoin(GroupCard, Card.id == GroupCard.card_id).outerjoin(Group, GroupCard.group_id == Group.id)
 
         # Создание списка условий для фильтрации
-        conditions = [or_(GroupCard.group.is_active == True, GroupCard.group_id == None)]
+        conditions = [or_(Group.is_active == True, GroupCard.group_id == None)]
 
         if query is not None:
             conditions.append(Card.title.ilike(f'%{query}%'))

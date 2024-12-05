@@ -1,10 +1,10 @@
 import os
 
-os.environ['ENGINE'] = 'sqlite+aiosqlite:///./database/testdb.db'
+os.environ['ENGINE'] = 'postgresql+asyncpg://test:test@test-postgres:5434/test'
 
 from run import app
 from fastapi.testclient import TestClient
-from database.session import run_database
+from database.session import run_database, drop_all
 import pytest
 import subprocess
 import atexit
@@ -12,7 +12,7 @@ import asyncio
 import logging
 import os
 
-@atexit.register
+#@atexit.register
 def shutdown():
     subprocess.run(["redis-cli", "shutdown"])
 
@@ -25,13 +25,18 @@ httpx_logger.setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-asyncio.new_event_loop().run_until_complete(run_database(reset=True))
-subprocess.run(["redis-server", "--daemonize", "yes"])
+#asyncio.new_event_loop().run_until_complete(drop_all())
+asyncio.new_event_loop().run_until_complete(run_database())
+#subprocess.run(["redis-server", "--daemonize", "yes"])
 
 
 def test_create_test_user():
     response = client.post('/users/create_test_user',
                            json={'id': 7485502073, 'lang': 'en'})
+    
+    logger.info(response.json()['detail'])
+    print(response.json()['detail'])
+
 
     assert response.status_code == 200
     assert response.json()['detail'] == 'User was created'

@@ -19,7 +19,7 @@ router = APIRouter(prefix="/cards", tags=['Карты'])
 
 
 @router.get('/search', response_model=SearchCardResponse, description='Поиск карт в магазине')
-@translate_response(translate_fields=['title'])
+@translate_response(translate_fields=['title', 'description'])
 async def search(
     user: WebAppUser,
     query: str = Query(default=None),
@@ -54,6 +54,7 @@ async def game(user: WebAppUser):
 
 
 @router.post('/receive_card', response_model=CardResponse, description='Выбрать карту из игры по индексу')
+@translate_response(translate_fields=['title', 'description'])
 async def receive_game_card(user: WebAppUser, data: ReceiveGameCard):
     json_game_cards = await async_redis.get(data.game_id)
 
@@ -75,6 +76,7 @@ async def receive_game_card(user: WebAppUser, data: ReceiveGameCard):
 
 
 @router.get('/get', response_model=CardResponse, description='Получить подробную информацию о карте')
+@translate_response(translate_fields=['title', 'description'])
 async def get_card(
     card_id: str = Query()
 ):
@@ -101,6 +103,7 @@ async def buy_card(user: WebAppUser, data: BuyCardRequest):
 
 
 @router.post('/my', response_model=UserCardList, description='Список всех карт пользователя')
+@translate_response(translate_fields=['title', 'description'])
 async def my(user: WebAppUser):
     cards = await get_user_cards(user_id=user.id)
 
@@ -111,5 +114,6 @@ async def my(user: WebAppUser):
 
 
 @router.get('/groups', response_model=CardGroups, description='Получить список сетов и открытых в них карт')
+@translate_response(translate_fields=['title', 'description'])
 async def my_groups(groups = Depends(check_group_cards)):
     return groups

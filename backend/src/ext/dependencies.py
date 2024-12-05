@@ -1,4 +1,3 @@
-import time
 from asyncio import Task
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
@@ -39,7 +38,7 @@ WebAppUser = Annotated[User, Depends(get_current_user)]
 
 async def update_energy(user: User):
     current_time = datetime.now(timezone.utc)
-    dif: timedelta = current_time - user.energy_last_update
+    dif: timedelta = current_time.replace(tzinfo=None) - user.energy_last_update
     energy_gained = int(dif.seconds // 10)
 
     if energy_gained > 0:
@@ -56,7 +55,7 @@ async def use_energy(user: User, amount):
 
 async def update_balance(user: User):
     current_time = datetime.now(timezone.utc)
-    dif: timedelta = current_time - user.balance_last_update
+    dif: timedelta = current_time.replace(tzinfo=None) - user.balance_last_update
     hours = dif.seconds // 60 // 60
     new_time = user.balance_last_update + timedelta(hours=hours)
 
