@@ -4,7 +4,7 @@ import jwt
 
 SECRET_KEY = "my_secret_key"
 ALGORITHM = "HS256"
-EXPIRATION_TIME = timedelta(minutes=30)
+EXPIRATION_TIME = timedelta(hours=3)
 
 
 def create_jwt_token(data: dict):

@@ -5,7 +5,7 @@ from database.requests import (get_all_user_tasks, get_user, get_user_cards,
                                get_user_friends, set_user)
 from fastapi import APIRouter, HTTPException, Query
 from src.cards.models import Card
-from src.ext.dependencies import WebAppUser
+from src.ext.dependencies import WebAppUser, get_bonus_per_hour
 from src.ext.jwt_token import create_jwt_token
 from src.ext.responses import DetailResponse
 from src.ext.validation import validate_qsl_init_data
@@ -19,7 +19,7 @@ if TEST_MODE:
     async def create_test_user(data: CreateTestUser):
         if await get_user(user_id=data.id):
             raise HTTPException(status_code=400, detail='User already exists')
-        await set_user(user_id=data.id, username = data.username, lang=data.lang)
+        await set_user(user_id=data.id, username=data.username, lang=data.lang)
 
         return DetailResponse(detail='User was created')
 
@@ -39,18 +39,7 @@ async def authInitData(data: InitDataRequest):
 
 @router.get('/bonus_per_hour', response_model=BonusPerHour, description='Получить доход в час пользователя')
 async def get_ref_link(user: WebAppUser):
-    cards = await get_user_cards(user_id=user.id)
-
-    res = 0
-    for card, amount in cards:
-        card: Card
-        res += card.bonus_per_hour * amount
-
-    tasks = await get_all_user_tasks(user_id=user.id)
-    for usertask in tasks:
-        ut: Task = usertask[0]
-        if usertask[1] and ut.bonus_per_hour:
-            res += ut.task.bonus_per_hour
+    res = await get_bonus_per_hour(user_id=user.id)
 
     return BonusPerHour(bonus=res)
 
@@ -67,7 +56,7 @@ async def get_ref_link(user: WebAppUser):
     return UserRefResponse(link=link)
 
 
-@router.get('/me/friends', response_model=UserRefResponse, description='Получить список своих рефералов')
+@router.get('/me/friends', response_model=UserFriendsList, description='Получить список своих рефералов')
 async def get_friends(user: WebAppUser):
     friends = await get_user_friends(user_id=user.id)
 

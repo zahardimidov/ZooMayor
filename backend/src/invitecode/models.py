@@ -26,8 +26,7 @@ class InviteCode(Base):
     bonus = mapped_column(Integer, default=0)
     exp = mapped_column(Integer, default=0)
 
-    card_id = mapped_column(ForeignKey(
-        'cards.id', ondelete='CASCADE'), nullable=True)
+    card_id = mapped_column(ForeignKey('cards.id'), nullable=True)
     card: Mapped['Card'] = relationship(lazy='subquery')
 
     def __str__(self) -> str:

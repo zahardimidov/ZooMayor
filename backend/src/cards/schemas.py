@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import HTTPException
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, computed_field, field_validator, ConfigDict
 from src.ext.responses import TranslatableResponse
 
 class CardResponse(TranslatableResponse):
@@ -18,8 +18,6 @@ class CardResponse(TranslatableResponse):
     section: str
     rating: int
 
-    _translate_fields = ['title', 'description']
-
 
 class SearchCardResponse(BaseModel):
     cards: List[CardResponse]
@@ -30,9 +28,12 @@ class BuyCardRequest(BaseModel):
 
 
 class UserCardResponse(BaseModel):
+    model_config = ConfigDict(extra='ignore')
+
     card_id: str
+    photo: str | None = None
     amount: int
-    type: str
+    type: str | None = None
 
 
 class UserCardList(BaseModel):
@@ -52,3 +53,27 @@ class ReceiveGameCard(BaseModel):
         if not value in range(3):
             raise HTTPException(status_code=400, detail='Unsupported index')
         return value
+
+
+class CardGroup(BaseModel):
+    model_config = ConfigDict(extra='ignore')
+
+    id: str
+    title: str
+    description: str | None = None
+    bonus: int
+    exp: int
+    bonus_per_hour: int | None
+    
+    cards_amount: int
+    cards: List[UserCardResponse]
+
+    @computed_field
+    @property
+    def bonus_received(self) -> bool:
+        return len(self.cards) == self.cards_amount
+
+class CardGroups(BaseModel):
+    model_config = ConfigDict(extra='ignore')
+
+    groups: List[CardGroup]

@@ -30,6 +30,9 @@ LANGUAGES = dict(
     de = 'german'
 )
 
+YANDEX_CLOUD_API_TOKEN = 'AQVN0GF6ohWdx2FEvw8z88sbtrlBTFgDMcgwX8Nn'
+YANDEX_CLOUD_FOLDER_ID = 'b1g6i8ev5a8h6oisn607'
+
 DEFAULT_LANG = "ru"
 
 BASE_DIR = Path(__file__).parent.resolve()
@@ -49,7 +52,7 @@ TEST_USER = {
 
 PORT = 4550
 
-HOST = env('HOST', 'https://1c27-178-47-140-82.ngrok-free.app')
+HOST = env('HOST', 'https://4aa9-178-47-140-82.ngrok-free.app')
 BOT_TOKEN = env('BOT_TOKEN', '5166691505:AAEbw80sx5EGT7pB9eT954PTO3WtowUMEME')
 ENGINE = env('ENGINE', "sqlite+aiosqlite:///./database/database.db")
 REDIS_HOST = env('REDIS_HOST', "localhost")

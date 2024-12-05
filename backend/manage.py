@@ -3,24 +3,30 @@
 import argparse
 import os
 
+os.environ['ENGINE'] = 'postgresql+asyncpg://zoomayor:zoomayor@0.0.0.0:5433/zoomayor'
+
+import asyncio
+from run import drop_all
+import subprocess
+from time import sleep
 
 def main():
     # Create the parser
     parser = argparse.ArgumentParser(description='Manage your application.')
 
-    # Add an argument for the command
     parser.add_argument('command', type=str, help='The command to execute')
-
-    # Add an optional argument for additional parameters
-    parser.add_argument('name', nargs=argparse.REMAINDER,
-                        help='Additional parameters for the command')
+    parser.add_argument('name', help='Additional parameters for the command', nargs='?')
 
     # Parse the arguments
     args = parser.parse_args()
 
-    appname: str = args.name[0]
 
-    if args.command == 'createapp' and appname:
+    if args.command == 'createapp':
+        appname: str = args.name
+
+        if not appname:
+            raise Exception('You should provide appname')
+        
         if not 'src' in os.listdir():
             os.mkdir('src')
 
@@ -43,6 +49,14 @@ def main():
                 )
         else:
             raise Exception('App was already created')
+        
+    elif args.command == 'drop':
+        subprocess.run(["docker-compose", "up", "zoomayor-postgres", "-d"])
+        sleep(3)
+        asyncio.new_event_loop().run_until_complete(drop_all())
+        subprocess.run(["docker-compose", "down"])
+
+
 
 
 if __name__ == '__main__':

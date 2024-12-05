@@ -3,11 +3,11 @@ from typing import List
 
 from database.session import async_session
 from fastapi import HTTPException
-from sqlalchemy import and_, func, select, update
-from src.cards.models import Card
+from sqlalchemy import and_, func, select, update, or_
+from src.cards.models import Card, Group, GroupCard
 from src.invitecode.models import InviteCode
 from src.tasks.models import Task
-from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask
+from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask, UserGroup
 from random import random
 
 async def get_user(user_id) -> User:
@@ -61,7 +61,7 @@ async def set_referral(referrer_id, referral_id, bonus=0, exp=0, card_id=None):
 
 async def get_user_friends(user_id):
     async with async_session() as session:
-        friends = await session.scalars(select(User.username, User.registered_at, UserRef.bonus, UserRef.exp, UserRef.card_id).join(UserRef).where(UserRef.referrer_id == user_id))
+        friends = await session.scalars(select(User.username, User.registered_at, UserRef.bonus, UserRef.exp, UserRef.card_id).join(UserRef, onclause=and_(UserRef.referrer_id == User.id)).where(UserRef.referrer_id == user_id))
 
         return list(friends)
 
@@ -75,10 +75,10 @@ async def get_user_cards(user_id):
 
 async def search_cards(query, minprice, maxprice, offset, limit) -> List[Card]:
     async with async_session() as session:
-        stmt = select(Card)
+        stmt = select(Card).outerjoin(GroupCard, Card.id == GroupCard.card_id)
 
         # Создание списка условий для фильтрации
-        conditions = []
+        conditions = [or_(GroupCard.group.is_active == True, GroupCard.group_id == None)]
 
         if query is not None:
             conditions.append(Card.title.ilike(f'%{query}%'))
@@ -159,6 +159,18 @@ async def get_user_invite_codes(user_id) -> InviteCode:
 
         return list(codes)
 
+async def get_user_card(user_id, card_id) -> UserCard:
+    async with async_session() as session:
+        card = await session.scalars(select(UserCard).where(UserCard.user_id == user_id, UserCard.card_id == card_id))
+
+        return card
+    
+async def get_user_received_group(user_id, group_id) -> UserCard:
+    async with async_session() as session:
+        group = await session.scalars(select(UserGroup).where(UserGroup.user_id == user_id, UserGroup.group_id == group_id))
+
+        return group
+
 
 async def get_bonus_by_code(code: str) -> InviteCode:
     async with async_session() as session:
@@ -185,6 +197,19 @@ async def set_user_invitecode(user_id, code):
         await user_receive_bonuses(user_id=user_id, **data)
 
         return userInviteCode
+    
+async def set_user_received_group(user_id, group_id):
+    async with async_session() as session:
+        usergroup = UserGroup(user_id=user_id, group_id = group_id)
+        session.add(usergroup)
+
+        await session.commit()
+        await session.refresh(usergroup)
+
+        data = usergroup.group.__dict__
+        await user_receive_bonuses(user_id=user_id, **data)
+
+        return usergroup
 
 
 async def get_all_user_tasks(user_id):
@@ -248,8 +273,6 @@ async def get_random_card_id():
         result = await session.execute(select(func.sum(Card.chance).label('total_percentage')))
         target = random() * result.one()[0]
 
-        print(target)
-
         cumulative_subquery = (
             select(
                 Card.id,
@@ -273,3 +296,20 @@ async def get_random_card_id():
         card_id = result.one()[0]
 
         return card_id
+    
+
+async def get_user_card_groups(user_id):
+    async with async_session() as session:
+        user = await get_user(user_id=user_id)
+        friends = await get_user_friends(user_id=user_id)
+
+        groups = await session.scalars(select(Group).where(Group.is_active == True, Group.min_level <= user.level, Group.min_friends_amount <= len(friends) ))
+
+        response = []
+        for group in groups.all():
+            amount = await session.execute(select(func.count(GroupCard.card_id)).where(GroupCard.group_id == group.id))
+            
+            cards = await session.scalars(select(UserCard).join(GroupCard, onclause=and_(UserCard.card_id == GroupCard.card_id)).where(GroupCard.group_id == group.id, UserCard.user_id == user_id))
+            response.append(dict(group = group, cards = cards, count = amount.fetchone()[0]))
+    
+    return response

@@ -1,11 +1,13 @@
 import enum
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
+from typing import Any, Dict
 
 from database.session import Base
 from sqlalchemy import (BigInteger, Boolean, DateTime, Enum, ForeignKey,
                         Integer, String)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.cards.models import Card
+from sqlalchemy.ext.hybrid import hybrid_property
+from src.cards.models import Card, Group
 from src.invitecode.models import InviteCode
 from src.tasks.models import Task
 
@@ -38,6 +40,14 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
         # onupdate=lambda: datetime.now(timezone.utc)
     )
+    energy_last_update = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+    balance_last_update = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now().replace(minute=0, second=0)
+    )
 
     @property
     def progress(self):
@@ -69,8 +79,7 @@ class UserRef(Base):
     bonus = mapped_column(Integer, default=0)
     exp = mapped_column(Integer, default=0)
 
-    card_id = mapped_column(ForeignKey(
-        'cards.id', ondelete='CASCADE'), nullable=True)
+    card_id = mapped_column(ForeignKey('cards.id'), nullable=True)
     card: Mapped['Card'] = relationship(lazy='subquery')
 
 
@@ -86,6 +95,21 @@ class UserCard(Base):
     card: Mapped['Card'] = relationship(lazy='subquery')
 
     amount = mapped_column(Integer, default=1)
+
+    receive_time = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    @hybrid_property
+    def type(self):
+        return self.card.type
+
+    def to_dict(self) -> Dict[str, Any]:
+        data = super().to_dict()
+        data.update(type = self.type)
+        return data
 
 
 class UserInviteCode(Base):
@@ -117,3 +141,16 @@ class UserTask(Base):
     created_at = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc))
     complete = mapped_column(Boolean, default=True)
+
+
+
+class UserGroup(Base):
+    __tablename__ = 'usergroup'
+
+    user_id = mapped_column(ForeignKey(
+        'users.id', ondelete='CASCADE'), primary_key=True)
+    user: Mapped['User'] = relationship(lazy='subquery')
+
+    group_id = mapped_column(ForeignKey(
+        'groups.id', ondelete='CASCADE'), primary_key=True)
+    group: Mapped['Group'] = relationship(lazy='subquery')

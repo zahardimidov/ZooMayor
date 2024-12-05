@@ -11,3 +11,8 @@ def test_search_cards(token):
     assert len(response.json()['cards']) > 0
 
     logger.info(json.dumps(response.json(), indent=4, ensure_ascii=False))
+
+
+def test_play_game(token):
+    response = client.post(
+        '/cards/game', headers={"Authorization": f"Bearer {token}"})

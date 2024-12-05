@@ -29,6 +29,7 @@ def validate_init_data(init_data: dict):
             del user['allows_write_to_pm']
             return user
     except Exception as e:
-        print(e)
+        pass
+        #print(e)
 
     return TEST_USER if TEST_MODE else None

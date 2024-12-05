@@ -9,6 +9,8 @@ test.py
 .pytest_cache/
 htmlcov/
 .coverage
+frontend/
+dump.rdb
 
 # Logs
 logs
@@ -34,6 +36,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-frontend/
-dump.rdb

@@ -1,14 +1,17 @@
 import json
+import logging
 
 from database.requests import (get_card_by_id, get_random_card_id,
-                               get_user_cards, search_cards, set_user,
-                               set_user_card)
-from fastapi import APIRouter, HTTPException, Query
-from src.cards.schemas import (BuyCardRequest, CardResponse, GameResponse,
-                               ReceiveGameCard, SearchCardResponse,
-                               UserCardList, UserCardResponse)
-from src.ext.dependencies import WebAppUser
+                               get_user_card_groups, get_user_cards,
+                               search_cards, set_user, set_user_card)
+from fastapi import APIRouter, Depends, HTTPException, Query
+from src.cards.schemas import (BuyCardRequest, CardGroup, CardGroups,
+                               CardResponse, GameResponse, ReceiveGameCard,
+                               SearchCardResponse, UserCardList,
+                               UserCardResponse)
+from src.ext.dependencies import WebAppUser, check_group_cards, use_energy
 from src.ext.responses import DetailResponse
+from src.ext.translate import translate_response
 from src.ext.utils import async_redis
 from src.invitecode.models import generate_code
 
@@ -16,6 +19,7 @@ router = APIRouter(prefix="/cards", tags=['Карты'])
 
 
 @router.get('/search', response_model=SearchCardResponse, description='Поиск карт в магазине')
+@translate_response(translate_fields=['title'])
 async def search(
     user: WebAppUser,
     query: str = Query(default=None),
@@ -40,7 +44,7 @@ async def game(user: WebAppUser):
             status_code=400, detail='You do not have enough enery')
 
     game_cards = [await get_random_card_id() for _ in range(3)]
-    await set_user(user_id=user.id, energy=user.energy - need_energy)
+    await use_energy(user=user, amount=need_energy)
 
     game_id = "game_"+generate_code()
 
@@ -104,3 +108,8 @@ async def my(user: WebAppUser):
         cards=[UserCardResponse(
             amount=amount, card_id=card.id, type=card.type) for card, amount in cards]
     )
+
+
+@router.get('/groups', response_model=CardGroups, description='Получить список сетов и открытых в них карт')
+async def my_groups(groups = Depends(check_group_cards)):
+    return groups
