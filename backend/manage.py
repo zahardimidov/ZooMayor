@@ -51,10 +51,16 @@ def main():
             raise Exception('App was already created')
         
     elif args.command == 'drop':
-        subprocess.run(["docker-compose", "up", "zoomayor-postgres", "-d"])
+        try:
+            subprocess.run(["docker-compose", "up", "zoomayor-postgres", "-d"])
+        except:
+            subprocess.run(["docker", "compose", "up", "zoomayor-postgres", "-d"])
         sleep(3)
         asyncio.new_event_loop().run_until_complete(drop_all())
-        subprocess.run(["docker-compose", "down"])
+        try:
+            subprocess.run(["docker-compose", "down"])
+        except:
+            subprocess.run(["docker", "compose", "up", "zoomayor-postgres", "-d"])
 
 
 
