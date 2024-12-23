@@ -65,7 +65,7 @@ jobs:
             set -e
             cd /home/zoomayor
             git pull https://zahardimidov:${{secrets.REPO_TOKEN}}@github.com/zahardimidov/${{secrets.REPO_NAME}}.git deploy
-            docker compose build
+            docker compose --env-file .devenv build
             docker compose down
             docker compose --env-file .devenv up -d
 
