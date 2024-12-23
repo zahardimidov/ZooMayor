@@ -53,6 +53,12 @@ jobs:
 
       - name: Set file permissions
         run: chmod 600 id_rsa
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_LOGIN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
         
       - name: Set up SSH Key and Deploy my App on Server
         uses: appleboy/ssh-action@master
