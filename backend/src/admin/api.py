@@ -1,10 +1,13 @@
-from src.ext.schemas import DetailResponse
-from database.requests import create_task, create_card, get_cardbacks, get_citizens_cards, get_cities_cards, create_cardback
-from fastapi import APIRouter, Depends, File, UploadFile, Query
-from src.admin.schemas import CardBackBase, CardList, CreateTask, CreateTaskResponse, CreateCardResponse, CardBase, CardBackList, CreateCardbackResponse
-from src.ext.utils import save_file
 from config import BASE_DIR, CARD_PICTURES_DIR
-
+from database.requests import (create_card, create_cardback, create_task,
+                               get_cardbacks, get_cities_cards,
+                               get_citizens_cards)
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from src.admin.schemas import (CardBackBase, CardBackList, CardBase, CardList,
+                               CreateCardbackResponse, CreateCardResponse,
+                               CreateTask, CreateTaskResponse)
+from src.ext.schemas import DetailResponse
+from src.ext.utils import save_file
 
 router = APIRouter(prefix="/admin", tags=['Админка'])
 
@@ -36,25 +39,22 @@ async def create_card_handler(data: CardBackBase = Depends(), photo: UploadFile 
     return CreateCardbackResponse(cardback_id=card.id, **dict(data))
 
 
-
 @router.get('/cardbacks', response_model=CardBackList)
 async def cardbacks(query: str = Query(default=None)):
     return dict(
-        cardbacks = [carback.to_dict() for carback in await get_cardbacks(query=query)]
+        cardbacks=[carback.to_dict() for carback in await get_cardbacks(query=query)]
     )
 
 
 @router.get('/cards/citizens', response_model=CardList)
 async def cardbacks(query: str = Query(default=None)):
     return dict(
-        cards = [carback.to_dict() for carback in await get_citizens_cards(query=query)]
+        cards=[carback.to_dict() for carback in await get_citizens_cards(query=query)]
     )
 
 
 @router.get('/cards/cities', response_model=CardList)
 async def cardbacks(query: str = Query(default=None)):
     return dict(
-        cards = [carback.to_dict() for carback in await get_cities_cards(query=query)]
+        cards=[carback.to_dict() for carback in await get_cities_cards(query=query)]
     )
-
-   
