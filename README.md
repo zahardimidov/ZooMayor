@@ -1,6 +1,6 @@
-# ZooMayor
+# Fullstack project deploy
 
-This document provides instructions for setting up the FastAPI project, including environment setup, server configuration, and SSH key generation for CI/CD setup.
+This document provides instructions for setting up the FastAPI Authentication project, including environment setup, server configuration, and SSH key generation for CI/CD setup.
 
 ## Table of Contents
 - [Setup Environment](#setup-environment)
@@ -17,7 +17,7 @@ To set up the Python environment, follow these steps:
 
 1. Create a virtual environment:
 ```bash
-python3.11 -m venv venv
+python3.12 -m venv venv
 ```
 
 2. Activate the virtual environment:
@@ -27,7 +27,6 @@ source venv/bin/activate
 
 3. Install required packages:
 ```bash
-pip install fastapi sqlalchemy sqladmin aiogram asyncpg greenlet itsdangerous
 pip install -r requirements.txt
 ```
 
@@ -46,13 +45,12 @@ To check test coverage, follow these steps:
 
 1. Install the coverage package:
 ```bash
-pip install pytest-cov httpx==0.27.2
+pip install pytest-cov
 ```
 
 2. Run tests with coverage:
 ```bash
 coverage run -m pytest
-coverage run -m pytest --log-cli-level=INFO
 ```
 
 3. Generate an HTML report and open it:
@@ -60,10 +58,6 @@ coverage run -m pytest --log-cli-level=INFO
 coverage html & open htmlcov/index.html
 ```
 
-4. Just report results to console
-```bash
-coverage report
-```
 
 ## Setup Server
 
@@ -174,14 +168,6 @@ jobs:
         with:
           python-version: '3.11'
           architecture: 'x64'
-
-      # Установка Redis
-      - name: Install Redis
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y redis-server
-          sudo service redis-server start
-          
       - name: Install requirements
         run: pip install -r backend/requirements.txt
       - name: Run tests
@@ -234,3 +220,12 @@ git add . && git commit -m "update" && git push
 ```bash
 git checkout deploy && git pull origin main && git push origin deploy && git checkout main
 ```
+
+docker-compose up --scale nginx=1
+docker compose --env-file .localenv up --build --scale nginx=1
+
+coverage run -m pytest --log-cli-level=INFO
+
+# FullstackMiniApp
+ 
+ 

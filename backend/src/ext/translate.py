@@ -5,7 +5,7 @@ from config import (DEFAULT_LANG, LANGUAGES, YANDEX_CLOUD_API_TOKEN,
                     YANDEX_CLOUD_FOLDER_ID)
 from pydantic import BaseModel
 from base64 import b64encode
-from src.ext.utils import async_redis
+from src.ext.utils import redis
 
 
 async def translate(target, texts: list[str]):
@@ -23,7 +23,7 @@ async def translate(target, texts: list[str]):
         encoded_str = b64encode(text.encode('utf-8')).decode('utf-8')
         key = target + '_' + encoded_str
 
-        value: bytes = await async_redis.get(key)
+        value: bytes = await redis.get(key)
         if value:
             translates[ind] = value.decode().title()
         else:

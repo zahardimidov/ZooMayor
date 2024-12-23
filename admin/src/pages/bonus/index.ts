@@ -8,7 +8,8 @@ export const bonusView = createRouteView({
   view: BonusPage,
 })
 
+
 export const editBonusView = createRouteView({
-  route: editBonusRoute,
+  route: editBonusRoute as any,
   view: EditBonusPage,
-})
+});

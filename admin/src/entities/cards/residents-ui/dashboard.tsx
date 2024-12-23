@@ -1,17 +1,28 @@
 import { ArrowIcon } from '@/shared/icons'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/ui/accordion'
-import { ResidentsCarousel } from './carousel'
-import { useUnit } from 'effector-react'
-import { ResidentCard } from './card'
-import { Link } from 'atomic-router-react'
 import { editCardRoute } from '@/shared/routes'
-import { $residentSearch, $searchResultResidents, residentSearchChanged, residentSearched } from '../model'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/ui/accordion'
+import { Link } from 'atomic-router-react'
+import { useUnit } from 'effector-react'
+import { useEffect, useState } from 'react'
+import { $residentSearch, Card, residentSearchChanged, residentSearched } from '../model'
+import { ResidentCard } from './card'
+import { ResidentsCarousel } from './carousel'
 
 export function ResidentsDashboard() {
   const search = useUnit($residentSearch)
   const searchChange = useUnit(residentSearchChanged)
-  const searchResults = useUnit($searchResultResidents)
   const onSearch = useUnit(residentSearched)
+
+  const [searchResults, setSearchResults] = useState<Card[]>([]);
+
+  useEffect(() => {
+    fetch(`http://0.0.0.0:4550/admin/cards/citizens`, {
+      method: 'GET',
+    }).then(response => response.json())
+      .then(data => {
+        setSearchResults(data.cards);
+      });
+  }, [])
 
   return (
     <section className="w-full rounded-xl bg-grey p-[20px] flex flex-col">

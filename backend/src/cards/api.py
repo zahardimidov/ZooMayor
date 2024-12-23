@@ -1,18 +1,18 @@
 import json
 import logging
 
-from database.requests import (get_card_by_id, get_random_card_id,
-                               get_user_card_groups, get_user_cards,
-                               search_cards, set_user, set_user_card)
+from database.requests import (get_card_by_id, get_cardback_by_id, get_random_card_id,
+                               get_user_card_groups, get_user_cardbacks, get_user_cards, get_user_cardback,
+                               search_cards, set_user, set_user_card, set_user_cardback_card)
 from fastapi import APIRouter, Depends, HTTPException, Query
-from src.cards.schemas import (BuyCardRequest, CardGroup, CardGroups,
-                               CardResponse, GameResponse, ReceiveGameCard,
+from src.cards.schemas import (BuyCardRequest, CardGroup, CardGroups, UserCardBacksList, UserCardbackResponse,
+                               CardResponse, GameResponse, ReceiveGameCard, SelectCardbackRequest,
                                SearchCardResponse, UserCardList,
                                UserCardResponse)
 from src.ext.dependencies import WebAppUser, check_group_cards, use_energy
-from src.ext.responses import DetailResponse
+from src.ext.schemas import DetailResponse
 from src.ext.translate import translate_response
-from src.ext.utils import async_redis
+from src.ext.utils import redis
 from src.invitecode.models import generate_code
 
 router = APIRouter(prefix="/cards", tags=['Карты'])
@@ -48,7 +48,7 @@ async def game(user: WebAppUser):
 
     game_id = "game_"+generate_code()
 
-    await async_redis.set(game_id, json.dumps(game_cards), ex=300)
+    await redis.set(game_id, json.dumps(game_cards), ex=300)
 
     return GameResponse(game_id=game_id)
 
@@ -56,7 +56,7 @@ async def game(user: WebAppUser):
 @router.post('/receive_card', response_model=CardResponse, description='Выбрать карту из игры по индексу')
 @translate_response(translate_fields=['title', 'description'])
 async def receive_game_card(user: WebAppUser, data: ReceiveGameCard):
-    json_game_cards = await async_redis.get(data.game_id)
+    json_game_cards = await redis.get(data.game_id)
 
     if not json_game_cards:
         raise HTTPException(status_code=400, detail='Game not found')
@@ -68,7 +68,7 @@ async def receive_game_card(user: WebAppUser, data: ReceiveGameCard):
     if not card:
         raise HTTPException(status_code=400, detail='Card not found')
 
-    await async_redis.delete(data.game_id)
+    await redis.delete(data.game_id)
 
     await set_user_card(user_id=user.id, card_id=card.id)
 
@@ -111,6 +111,48 @@ async def my(user: WebAppUser):
         cards=[UserCardResponse(
             amount=amount, card_id=card.id, type=card.type) for card, amount in cards]
     )
+
+
+@router.post('/my_cardbacks', response_model=UserCardList, description='Список всех рубашек пользователя')
+@translate_response(translate_fields=['title', 'description'])
+async def my_cardbacks(user: WebAppUser):
+    cardbacks = await get_user_cardbacks(user_id=user.id)
+
+    return UserCardBacksList(
+        cards=[UserCardbackResponse(cardback_id = back.id,  photo = back.photo) for back in cardbacks]
+    )
+
+@router.post('/buy_cardback', response_model=DetailResponse, description='Купить рубашку')
+async def buy_card(user: WebAppUser, data: SelectCardbackRequest):
+    back = await get_cardback_by_id(back_id=data.cardback_id)
+
+    if not back:
+        raise HTTPException(status_code=400, detail='Cardback not found')
+
+    if user.balance >= back.price:
+        await set_user(user_id=user.id, balance=user.balance - back.price)
+        await set_user_cardback_card(user_id=user.id, cardback_id=back.id)
+    else:
+        raise HTTPException(
+            status_code=400, detail="You could not buy this card")
+
+    return DetailResponse(detail='Cardback was bought')
+
+
+
+@router.post('/set_cardback', response_model=DetailResponse, description='Купить рубашку')
+async def buy_card(user: WebAppUser, data: SelectCardbackRequest):
+    back =  await get_user_cardback(user_id=user.id, cardback_id=data.cardback_id)
+
+    if not back:
+        raise HTTPException(status_code=400, detail='Cardback not found')
+    
+    for cardback in  await get_user_cardbacks(user_id=user.id):
+        await set_user_cardback_card(user_id=user.id, cardback_id=cardback.cardback_id, selected=False)
+
+    await set_user_cardback_card(user_id=user.id, cardback_id=data.cardback_id, selected=True)
+
+    return DetailResponse(detail='Cardback was selected')
 
 
 @router.get('/groups', response_model=CardGroups, description='Получить список сетов и открытых в них карт')

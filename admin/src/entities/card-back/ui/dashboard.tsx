@@ -2,16 +2,26 @@ import { ArrowIcon } from '@/shared/icons'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/ui/accordion'
 import { CardBackCarousel } from './carousel'
 import { useUnit } from 'effector-react'
-import { $cardBacksSearch, $searchResultscardBacks, cardBacksSearchChanged, cardBacksSearched } from '../model'
+import { $cardBacksSearch, CardBack, cardBacksSearchChanged, cardBacksSearched } from '../model'
 import { CardBackCard } from './card'
 import { Link } from 'atomic-router-react'
 import { editCardBackRoute } from '@/shared/routes'
+import { useState } from 'react'
 
 export function CardBackDashboard() {
   const search = useUnit($cardBacksSearch)
   const searchChange = useUnit(cardBacksSearchChanged)
-  const searchResults = useUnit($searchResultscardBacks)
+  const [searchResults, setSearchResults] = useState<CardBack[]>([]);
   const onSearch = useUnit(cardBacksSearched)
+
+  function searchCardbacks(){
+    fetch(`http://0.0.0.0:4550/admin/cardbacks`, {
+      method: 'GET',
+    }).then(response => response.json())
+    .then(data => {
+      setSearchResults(data.cardbacks);
+    });
+  }
 
   return (
     <section className="w-full rounded-xl bg-grey p-[20px] flex flex-col">
@@ -37,6 +47,7 @@ export function CardBackDashboard() {
             placeholder="Введите название"
             value={search}
             onChange={(e) => searchChange(e.target.value)}
+            onSubmit={() => searchCardbacks()}
           />
           <button className="text-white text-lg bg-green rounded-lg px-[10px] py-[5px]" onClick={onSearch}>
             ПОИСК

@@ -26,7 +26,7 @@ export const $chance = restore(chanceChanged, 0).reset(resetEditCard)
 export const descriptionChanged = createEvent<string>()
 export const $description = restore(descriptionChanged, '').reset(resetEditCard)
 
-export const typeChanged = createEvent<'city' | 'resident'>()
+export const typeChanged = createEvent<'city' | 'citizen'>()
 export const $type = restore(typeChanged, 'city').reset(resetEditCard)
 
 export const notesChanged = createEvent<string>()

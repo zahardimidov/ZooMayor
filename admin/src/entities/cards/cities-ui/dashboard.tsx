@@ -1,17 +1,28 @@
 import { ArrowIcon } from '@/shared/icons'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/ui/accordion'
-import { CitiesCarousel } from './carousel'
-import { useUnit } from 'effector-react'
-import { CityCard } from './card'
-import { Link } from 'atomic-router-react'
 import { editCardRoute } from '@/shared/routes'
-import { $citySearch, $searchResultCities, citySearchChanged, citySearched } from '../model'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/ui/accordion'
+import { Link } from 'atomic-router-react'
+import { useUnit } from 'effector-react'
+import { useEffect, useState } from 'react'
+import { $citySearch, Card, citySearchChanged, citySearched } from '../model'
+import { CityCard } from './card'
+import { CitiesCarousel } from './carousel'
 
 export function CitiesDashboard() {
   const search = useUnit($citySearch)
   const searchChange = useUnit(citySearchChanged)
-  const searchResults = useUnit($searchResultCities)
   const onSearch = useUnit(citySearched)
+
+  const [searchResults, setSearchResults] = useState<Card[]>([]);
+
+  useEffect(() => {
+    fetch(`http://0.0.0.0:4550/admin/cards/cities`, {
+      method: 'GET',
+    }).then(response => response.json())
+      .then(data => {
+        setSearchResults(data.cards);
+      });
+  }, [])
 
   return (
     <section className="w-full rounded-xl bg-grey p-[20px] flex flex-col">

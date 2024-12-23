@@ -1,16 +1,20 @@
 import { cardsRoute } from '@/shared/routes'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Link } from 'atomic-router-react'
 import { useUnit } from 'effector-react'
+import { useState } from 'react'
 import {
-  $type,
   $chance,
+  $description,
   $exp,
   $hasExp,
   $hasHourly,
   $hourly,
   $name,
+  $notes,
+  $rating,
   $reward,
-  typeChanged,
+  $type,
   chanceChanged,
   descriptionChanged,
   expChanged,
@@ -18,15 +22,12 @@ import {
   hasHourlyChanged,
   hourlyChanged,
   nameChanged,
-  rewardChanged,
-  $description,
-  $notes,
   notesChanged,
-  $rating,
   ratingChanged,
+  rewardChanged,
+  typeChanged,
 } from './model'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { useState } from 'react'
+import Swal from 'sweetalert2'
 
 export function EditCard() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -41,6 +42,57 @@ export function EditCard() {
   const [type, changeType] = useUnit([$type, typeChanged])
   const [rating, changeRating] = useUnit([$rating, ratingChanged])
   const [notes, changeNotes] = useUnit([$notes, notesChanged])
+
+  function postData() {
+    var formData = new FormData()
+
+    if (selectedImage){
+      formData.append('photo', selectedImage);
+    }
+
+    const data = {
+      title: name.toString(),
+      bonus: reward.toString(),
+      exp: exp.toString(),
+      bonus_per_hour: hourly.toString(),
+      chance: chance.toString(),
+      price: '1000',
+      description: description.toString(),
+      type: type.toString(),
+      node: notes.toString(),
+      section: 'culture',
+      rating: rating.toString()
+    };
+
+    const params = new URLSearchParams(data).toString();
+
+    fetch(`http://0.0.0.0:4550/admin/create_card?${params}`, {
+      method: 'POST',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Card saved',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        }).then((result) => {
+          console.log(result)
+          location.href = 'http://0.0.0.0:5173/cards'
+        })
+
+      }
+      else{
+        var data = response.json();
+        console.log(data);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error',
+          icon: 'error',
+        })
+      }
+    })
+  }
 
   return (
     <div className="w-full bg-grey rounded-xl px-[70px] relative py-[20px]">
@@ -162,11 +214,11 @@ export function EditCard() {
             <div className="flex underline text-xl flex-col gap-[10px]">
               <div className="w-full flex justify-between items-center">
                 <p>Жители</p>
-                <input type="radio" name="type" checked={type == 'city'} onChange={() => changeType('city')} />
+                <input type="radio" name="type" checked={type == 'citizen'} onChange={() => changeType('citizen')} />
               </div>
               <div className="w-full flex justify-between items-center">
                 <p>Город</p>
-                <input type="radio" name="type" checked={type == 'resident'} onChange={() => changeType('resident')} />
+                <input type="radio" name="type" checked={type == 'city'} onChange={() => changeType('city')} />
               </div>
             </div>
             <p className="text-xs text-black/50">выберите к какому разделу относится карта</p>
@@ -215,7 +267,7 @@ export function EditCard() {
             value={notes}
             onChange={(e) => changeNotes(e.target.value)}
           />
-          <button className="max-w-max px-[10px] py-[5px] bg-green rounded-lg text-lg text-white self-end mt-[10px]">
+          <button onClick={postData} className="max-w-max px-[10px] py-[5px] bg-green rounded-lg text-lg text-white self-end mt-[10px]">
             РЕДАКТИРОВАТЬ/СОХРАНИТЬ
           </button>
         </div>

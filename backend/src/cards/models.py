@@ -47,6 +47,33 @@ class Card(Base):
 
     def __repr__(self) -> str:
         return f'{self.title} ({self.id})'
+    
+
+class CardBack(Base):
+    __tablename__ = 'cardbacks'
+
+    id = mapped_column(String, default=generate_uuid, primary_key=True)
+
+    title = mapped_column(String, nullable=False)
+    bonus = mapped_column(Integer, nullable=False)
+    exp = mapped_column(Integer, nullable=True)
+    price = mapped_column(Integer, nullable=False)
+
+    description = mapped_column(String)
+
+    note = mapped_column(String)
+
+    min_friends_amount = mapped_column(Integer, default=0)
+    min_level = mapped_column(Integer, default=0)
+
+    rating = mapped_column(Integer, nullable=False)
+
+    @property
+    def photo(self):
+        return CARD_PICTURES_DIR.joinpath(f'{self.id}.png')
+
+    def __repr__(self) -> str:
+        return f'{self.title} ({self.id})'
 
 
 class Group(Base):

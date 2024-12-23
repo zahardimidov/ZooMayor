@@ -1,13 +1,13 @@
 import enum
-from datetime import datetime, timezone, date
+from datetime import date, datetime, timezone
 from typing import Any, Dict
 
 from database.session import Base
 from sqlalchemy import (BigInteger, Boolean, DateTime, Enum, ForeignKey,
-                        Integer, String)
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+                        Integer, String, func)
 from sqlalchemy.ext.hybrid import hybrid_property
-from src.cards.models import Card, Group
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.cards.models import Card, CardBack, Group
 from src.invitecode.models import InviteCode
 from src.tasks.models import Task
 
@@ -37,16 +37,16 @@ class User(Base):
 
     registered_at = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
         # onupdate=lambda: datetime.now(timezone.utc)
     )
     energy_last_update = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
+        server_default=func.now(),
     )
     balance_last_update = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now().replace(minute=0, second=0)
+        server_default=func.now(),
     )
 
     @property
@@ -65,7 +65,8 @@ class UserRef(Base):
         'User',
         foreign_keys=[referral_id],
         backref='referrals',
-        primaryjoin='UserRef.referral_id == User.id'
+        primaryjoin='UserRef.referral_id == User.id',
+        lazy='subquery'
     )
 
     referrer_id = mapped_column(ForeignKey('users.id'), primary_key=True)
@@ -73,7 +74,8 @@ class UserRef(Base):
         'User',
         foreign_keys=[referrer_id],
         backref='referrers',
-        primaryjoin='UserRef.referrer_id == User.id'
+        primaryjoin='UserRef.referrer_id == User.id',
+        lazy='subquery'
     )
 
     bonus = mapped_column(Integer, default=0)
@@ -81,6 +83,23 @@ class UserRef(Base):
 
     card_id = mapped_column(ForeignKey('cards.id'), nullable=True)
     card: Mapped['Card'] = relationship(lazy='subquery')
+
+    def __str__(self):
+        return f'{self.referral.username} - {self.referrer.username}'
+
+
+class UserCardBack(Base):
+    __tablename__ = 'usercardbacks'
+
+    user_id = mapped_column(ForeignKey(
+        'users.id', ondelete='CASCADE'), primary_key=True)
+    user: Mapped['User'] = relationship(lazy='subquery')
+
+    cardback_id = mapped_column(ForeignKey(
+        'cardbacks.id', ondelete='CASCADE'), primary_key=True)
+    cardback: Mapped['CardBack'] = relationship(lazy='subquery')
+
+    selected = mapped_column(Boolean, default=False)
 
 
 class UserCard(Base):
@@ -98,7 +117,7 @@ class UserCard(Base):
 
     receive_time = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
         onupdate=lambda: datetime.now(timezone.utc)
     )
 
@@ -108,7 +127,7 @@ class UserCard(Base):
 
     def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
-        data.update(type = self.type)
+        data.update(type=self.type)
         return data
 
 
@@ -139,9 +158,9 @@ class UserTask(Base):
     task: Mapped['Task'] = relationship(lazy='subquery')
 
     created_at = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc))
+        DateTime,
+        server_default=func.now(),)
     complete = mapped_column(Boolean, default=True)
-
 
 
 class UserGroup(Base):

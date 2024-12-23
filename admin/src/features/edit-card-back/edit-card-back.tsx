@@ -24,6 +24,7 @@ import {
   ratingChanged,
 } from './model'
 import { useState } from 'react'
+import Swal from 'sweetalert2'
 
 export function EditCardBack() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -37,6 +38,54 @@ export function EditCardBack() {
   const [description, changeDescription] = useUnit([$descripition, descriptionChanged])
   const [rating, changeRating] = useUnit([$rating, ratingChanged])
   const [notes, changeNotes] = useUnit([$notes, notesChanged])
+
+  function postData() {
+    var formData = new FormData()
+
+    if (selectedImage){
+      formData.append('photo', selectedImage);
+    }
+
+    const data = {
+      title: name.toString(),
+      price: price.toString(),
+      exp: experience.toString(),
+      min_level: levelsCount.toString(),
+      min_friends_amount: friendsCount.toString(),
+      rating: rating.toString(),
+      description: description.toString(),
+      note: notes.toString()
+    };
+
+    const params = new URLSearchParams(data).toString();
+
+
+    fetch(`http://0.0.0.0:4550/admin/create_cardback?${params}`, {
+      method: 'POST',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Card saved',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        }).then((result) => {
+          console.log(result)
+          location.href = 'http://0.0.0.0:5173/cards'
+        })
+      }
+      else{
+        var data = response.json();
+        console.log(data);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error',
+          icon: 'error',
+        })
+      }
+    })
+  }
 
   return (
     <div className="w-full bg-grey rounded-xl px-[70px] relative py-[20px]">
@@ -203,7 +252,7 @@ export function EditCardBack() {
             value={notes}
             onChange={(e) => changeNotes(e.target.value)}
           />
-          <button className="max-w-max px-[10px] py-[5px] bg-green rounded-lg text-lg text-white self-end mt-[10px]">
+          <button onClick={postData} className="max-w-max px-[10px] py-[5px] bg-green rounded-lg text-lg text-white self-end mt-[10px]">
             РЕДАКТИРОВАТЬ/СОХРАНИТЬ
           </button>
         </div>

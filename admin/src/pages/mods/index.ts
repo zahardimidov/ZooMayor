@@ -9,6 +9,6 @@ export const modsView = createRouteView({
 })
 
 export const editModView = createRouteView({
-  route: editModRoute,
+  route: editModRoute as any,
   view: EditModPage,
 })

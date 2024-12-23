@@ -1,10 +1,19 @@
-import { Carousel, CarouselContent, CarouselNext, CarouselPrevious } from '@/shared/ui/carousel'
-import { useUnit } from 'effector-react'
-import { $allResidents } from '../model'
-import { ResidentCard } from './card'
+import { Carousel, CarouselContent, CarouselNext, CarouselPrevious } from '@/shared/ui/carousel';
+import { useEffect, useState } from 'react';
+import { Card } from '../model';
+import { ResidentCard } from './card';
 
 export function ResidentsCarousel() {
-  const allCards = useUnit($allResidents)
+  const [allCards, setCardsResults] = useState<Card[]>([]);
+
+  useEffect(() => {
+    fetch(`http://0.0.0.0:4550/admin/cards/citizens`, {
+      method: 'GET',
+    }).then(response => response.json())
+      .then(data => {
+        setCardsResults(data.cards);
+      });
+  }, [])
 
   return (
     <Carousel className="w-full mt-[20px] px-[70px]" opts={{ align: 'start' }}>

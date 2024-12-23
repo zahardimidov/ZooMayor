@@ -2,36 +2,34 @@ import { combine, createEvent, createStore, sample } from 'effector'
 
 export interface Card {
   id: number
-  name: string
+  title: string
   description: string
   bonus: number
-  hourlyIncome?: number
-  experience?: number
-  hasHourlyIncome: boolean
+  bonus_per_hour?: number
+  exp?: number
+  has_bonus_per_hour: boolean
   hasExp: boolean
-  reward: string
   chance: number
-  type: 'resident' | 'city'
+  type: 'citizen' | 'city'
   category: string
   rating: number
-  notes: string
+  note: string
   photo: string
 }
 
 const mockCard: Omit<Card, 'id'> = {
-  name: 'Cool Card but with photo of card back',
-  experience: 50,
+  title: 'Cool Card but with photo of card back',
+  exp: 50,
   description: 'Cool card with decent xp',
   rating: 64,
-  notes: '',
+  note: '',
   hasExp: true,
-  hasHourlyIncome: true,
+  has_bonus_per_hour: true,
   photo: '/blue-card-back.png',
   bonus: 1000,
   category: 'Animals',
   chance: 50,
-  hourlyIncome: 1000,
-  reward: 'cool nick color',
+  bonus_per_hour: 1000,
   type: 'city',
 }
 
@@ -51,7 +49,7 @@ sample({
   clock: citySearched,
   source: combine([$allCities, $citySearch]),
   filter: ([all, search]) => all.length != 0 && search != '',
-  fn: ([all, search]) => all.filter((city) => city.name.toLowerCase().includes(search.toLowerCase())),
+  fn: ([all, search]) => all.filter((city) => city.title.toLowerCase().includes(search.toLowerCase())),
   target: $searchResultCities,
 })
 
@@ -79,7 +77,7 @@ sample({
   clock: residentSearched,
   source: combine([$allResidents, $residentSearch]),
   filter: ([all, search]) => all.length != 0 && search != '',
-  fn: ([all, search]) => all.filter((resident) => resident.name.toLowerCase().includes(search.toLowerCase())),
+  fn: ([all, search]) => all.filter((resident) => resident.title.toLowerCase().includes(search.toLowerCase())),
   target: $searchResultResidents,
 })
 

@@ -1,15 +1,10 @@
 from aiogram import Bot
 from aiogram.utils.deep_linking import create_start_link
 from config import BOT_TOKEN, TEST_MODE
-from database.requests import (get_all_user_tasks, get_user, get_user_cards,
-                               get_user_friends, set_user)
-from fastapi import APIRouter, HTTPException, Query
-from src.cards.models import Card
+from database.requests import *
+from fastapi import APIRouter, HTTPException
 from src.ext.dependencies import WebAppUser, get_bonus_per_hour
-from src.ext.jwt_token import create_jwt_token
-from src.ext.responses import DetailResponse
-from src.ext.validation import validate_qsl_init_data
-from src.tasks.models import Task
+from src.ext.schemas import DetailResponse
 from src.users.schemas import *
 
 router = APIRouter(prefix="/users", tags=['Пользователь'])
@@ -22,19 +17,6 @@ if TEST_MODE:
         await set_user(user_id=data.id, username=data.username, lang=data.lang)
 
         return DetailResponse(detail='User was created')
-
-
-@router.post('/authInitData', response_model=AuthInitDataResponse, description='Принимает window.Telegram.WebApp.initData и возвращает токен')
-async def authInitData(data: InitDataRequest):
-    print(f'{data.initData=}')
-    user_data = validate_qsl_init_data(data.initData)
-
-    if not user_data:
-        raise HTTPException(
-            status_code=400, detail='Invalid auth data provided')
-
-    jwt_token = create_jwt_token({"initData": data.initData})
-    return dict(access_token=jwt_token)
 
 
 @router.get('/bonus_per_hour', response_model=BonusPerHour, description='Получить доход в час пользователя')
@@ -65,11 +47,7 @@ async def get_friends(user: WebAppUser):
 
 @router.get('/me/settings', response_model=UserSettingsResponse, description='Получить свои текущие настройки')
 async def get_me_settings(user: WebAppUser):
-    return dict(
-        lang=user.lang.name,
-        vibration=user.vibration,
-        dark_mode=user.dark_mode
-    )
+    return user.to_dict()
 
 
 @router.post('/me/settings/switch-lang', response_model=DetailResponse, description='Переключение языка')

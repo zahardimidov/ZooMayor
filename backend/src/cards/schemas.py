@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import HTTPException
 from pydantic import BaseModel, computed_field, field_validator, ConfigDict
-from src.ext.responses import TranslatableResponse
+from src.ext.schemas import TranslatableResponse
 
 class CardResponse(TranslatableResponse):
     id: str
@@ -27,6 +27,10 @@ class BuyCardRequest(BaseModel):
     card_id: str
 
 
+class SelectCardbackRequest(BaseModel):
+    cardback_id: str
+
+
 class UserCardResponse(BaseModel):
     model_config = ConfigDict(extra='ignore')
 
@@ -38,6 +42,18 @@ class UserCardResponse(BaseModel):
 
 class UserCardList(BaseModel):
     cards: List[UserCardResponse]
+
+
+
+class UserCardbackResponse(BaseModel):
+    model_config = ConfigDict(extra='ignore')
+
+    cardback_id: str
+    photo: str | None = None
+
+
+class UserCardBacksList(BaseModel):
+    cards: List[UserCardbackResponse]
 
 
 class GameResponse(BaseModel):

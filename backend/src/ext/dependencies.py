@@ -1,26 +1,23 @@
-from asyncio import Task
-from datetime import datetime, timedelta, timezone
+import base64
 from typing import Annotated
-
-from src.cards.schemas import CardGroup, CardGroups, UserCardResponse
-from database.requests import (get_all_user_tasks, get_user, get_user_card_groups, get_user_cards, get_user_card, get_user_received_group, set_user_received_group,
-                               set_user)
+from datetime import datetime, timedelta, timezone
+from database.requests import get_user
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.cards.models import Card
-from src.ext.jwt_token import verify_jwt_token
 from src.ext.validation import validate_qsl_init_data
 from src.users.models import User
+from src.cards.schemas import CardGroup, CardGroups, UserCardResponse
+from database.requests import *
 
 auth_scheme = HTTPBearer()
 
 
 async def get_current_user(token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
-    initData = verify_jwt_token(token.credentials)
-    if not initData:
-        raise HTTPException(status_code=400, detail="Invalid token")
+    decoded_bytes = base64.b64decode(token.credentials.strip())
+    decoded_string = decoded_bytes.decode('utf-8')
 
-    user_data = validate_qsl_init_data(initData)
+    user_data = validate_qsl_init_data(decoded_string)
+    print(user_data)
     if not user_data:
         raise HTTPException(
             status_code=400, detail='Invalid auth data provided')
@@ -29,11 +26,11 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(auth_sc
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
 
-    user = await update_energy(user)
-
     return user
 
 WebAppUser = Annotated[User, Depends(get_current_user)]
+
+
 
 
 async def update_energy(user: User):

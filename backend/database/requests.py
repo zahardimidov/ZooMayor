@@ -4,11 +4,12 @@ from typing import List
 from database.session import async_session
 from fastapi import HTTPException
 from sqlalchemy import and_, func, select, update, or_
-from src.cards.models import Card, Group, GroupCard
+from src.cards.models import Card, Group, GroupCard, CardBack, CardTypeEnum, CardSectionEnum
 from src.invitecode.models import InviteCode
 from src.tasks.models import Task
-from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask, UserGroup
+from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask, UserGroup, UserCardBack
 from random import random
+
 
 async def get_user(user_id) -> User:
     async with async_session() as session:
@@ -22,7 +23,14 @@ async def get_card_by_id(card_id) -> Card:
         card = await session.scalar(select(Card).where(Card.id == card_id))
 
         return card
-    
+
+
+async def get_cardback_by_id(back_id) -> CardBack:
+    async with async_session() as session:
+        back = await session.scalar(select(CardBack).where(CardBack.id == back_id))
+
+        return back
+
 
 async def get_task_by_id(task_id) -> Task:
     async with async_session() as session:
@@ -73,9 +81,17 @@ async def get_user_cards(user_id):
         return results.all()
 
 
+async def get_user_cardbacks(user_id):
+    async with async_session() as session:
+        results = await session.execute(select(CardBack).join(UserCardBack).where(UserCardBack.user_id == user_id))
+
+        return results.all()
+
+
 async def search_cards(query, minprice, maxprice, offset, limit) -> List[Card]:
     async with async_session() as session:
-        stmt = select(Card).outerjoin(GroupCard, Card.id == GroupCard.card_id).outerjoin(Group, GroupCard.group_id == Group.id)
+        stmt = select(Card).outerjoin(GroupCard, Card.id == GroupCard.card_id).outerjoin(
+            Group, GroupCard.group_id == Group.id)
 
         # Создание списка условий для фильтрации
         conditions = [or_(Group.is_active == True, GroupCard.group_id == None)]
@@ -130,6 +146,36 @@ async def set_user_card(user_id, card_id):
         await user_receive_bonuses(user_id=user_id, **data)
 
 
+async def get_user_cardback(user_id, cardback_id):
+    async with async_session() as session:
+        userCardback = await session.scalar(select(UserCardBack).where(UserCardBack.cardback_id == cardback_id, UserCardBack.user_id == user_id))
+
+        return userCardback
+
+
+async def set_user_cardback_card(user_id, cardback_id, selected=False):
+    back = await get_cardback_by_id(card_id=cardback_id)
+
+    if not back:
+        raise HTTPException(status_code=400, detail='Cardback not found')
+
+    async with async_session() as session:
+        userCardback = await get_user_cardback(user_id=user_id, cardback_id=cardback_id)
+
+        if userCardback:
+            userCardback.selected = selected
+        else:
+            userCardback = UserCardBack(
+                user_id=user_id, cardback_id=cardback_id, selected=selected)
+            session.add(userCardback)
+
+            data: dict = userCardback.cardback.__dict__
+            await user_receive_bonuses(user_id=user_id, **data)
+
+        await session.commit()
+        await session.refresh(userCardback)
+
+
 async def add_user_exp(user_id, exp):
     user = await get_user(user_id=user_id)
 
@@ -159,12 +205,14 @@ async def get_user_invite_codes(user_id) -> InviteCode:
 
         return list(codes)
 
+
 async def get_user_card(user_id, card_id) -> UserCard:
     async with async_session() as session:
         card = await session.scalars(select(UserCard).where(UserCard.user_id == user_id, UserCard.card_id == card_id))
 
         return card
-    
+
+
 async def get_user_received_group(user_id, group_id) -> UserCard:
     async with async_session() as session:
         group = await session.scalars(select(UserGroup).where(UserGroup.user_id == user_id, UserGroup.group_id == group_id))
@@ -197,10 +245,11 @@ async def set_user_invitecode(user_id, code):
         await user_receive_bonuses(user_id=user_id, **data)
 
         return userInviteCode
-    
+
+
 async def set_user_received_group(user_id, group_id):
     async with async_session() as session:
-        usergroup = UserGroup(user_id=user_id, group_id = group_id)
+        usergroup = UserGroup(user_id=user_id, group_id=group_id)
         session.add(usergroup)
 
         await session.commit()
@@ -248,19 +297,21 @@ async def set_user_task(user_id, task_id):
 
         await user_receive_bonuses(user_id=user_id, **userTask.task.__dict__)
 
+
 async def create_task(title, **kwargs):
     async with async_session() as session:
-        task = Task(title = title, **kwargs)
+        task = Task(title=title, **kwargs)
         session.add(task)
 
         await session.commit()
         await session.refresh(task)
 
         return task
-    
+
+
 async def create_card(title, **kwargs):
     async with async_session() as session:
-        card = Card(title = title, **kwargs)
+        card = Card(title=title, **kwargs)
         session.add(card)
 
         await session.commit()
@@ -268,17 +319,35 @@ async def create_card(title, **kwargs):
 
         return card
     
+async def create_cardback(title, **kwargs):
+    async with async_session() as session:
+        cardback = CardBack(title=title, **kwargs)
+        session.add(cardback)
+
+        await session.commit()
+        await session.refresh(cardback)
+
+        return cardback
+
+
 async def get_random_card_id():
     async with async_session() as session:
         result = await session.execute(select(func.sum(Card.chance).label('total_percentage')))
-        target = random() * result.one()[0]
+        total_percentage = result.one()[0]
+
+        if not total_percentage:
+            raise HTTPException(
+                status_code=400, detail='Not enough cards found')
+
+        target = random() * total_percentage
 
         cumulative_subquery = (
             select(
                 Card.id,
                 Card.title,
                 Card.chance,
-                func.sum(Card.chance).over(order_by=Card.chance).label('cumulative_percentage')
+                func.sum(Card.chance).over(order_by=Card.chance).label(
+                    'cumulative_percentage')
             )
             .subquery()
         )
@@ -296,20 +365,51 @@ async def get_random_card_id():
         card_id = result.one()[0]
 
         return card_id
-    
+
 
 async def get_user_card_groups(user_id):
     async with async_session() as session:
         user = await get_user(user_id=user_id)
         friends = await get_user_friends(user_id=user_id)
 
-        groups = await session.scalars(select(Group).where(Group.is_active == True, Group.min_level <= user.level, Group.min_friends_amount <= len(friends) ))
+        groups = await session.scalars(select(Group).where(Group.is_active == True, Group.min_level <= user.level, Group.min_friends_amount <= len(friends)))
 
         response = []
         for group in groups.all():
             amount = await session.execute(select(func.count(GroupCard.card_id)).where(GroupCard.group_id == group.id))
-            
+
             cards = await session.scalars(select(UserCard).join(GroupCard, onclause=and_(UserCard.card_id == GroupCard.card_id)).where(GroupCard.group_id == group.id, UserCard.user_id == user_id))
-            response.append(dict(group = group, cards = cards, count = amount.fetchone()[0]))
-    
+            response.append(dict(group=group, cards=cards,
+                            count=amount.fetchone()[0]))
+
     return response
+
+
+async def get_cardbacks(query):
+    async with async_session() as session:
+        if query:
+            cardbacks = await session.scalars(select(CardBack).where(CardBack.title.ilike(f'%{query}%')))
+        else:
+            cardbacks = await session.scalars(select(CardBack))
+
+        return cardbacks.all()
+
+
+async def get_citizens_cards(query):
+    async with async_session() as session:
+        if query:
+            cards = await session.scalars(select(Card).where(Card.type == CardTypeEnum.citizen.value, CardBack.title.ilike(f'%{query}%')))
+        else:
+            cards = await session.scalars(select(Card).where(Card.type == CardTypeEnum.citizen.value))
+
+        return cards.all()
+
+
+async def get_cities_cards(query):
+    async with async_session() as session:
+        if query:
+            cards = await session.scalars(select(Card).where(Card.type == CardTypeEnum.city.value, CardBack.title.ilike(f'%{query}%')))
+        else:
+            cards = await session.scalars(select(Card).where(Card.type == CardTypeEnum.city.value))
+
+        return cards.all()

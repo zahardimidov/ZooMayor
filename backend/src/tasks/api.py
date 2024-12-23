@@ -1,7 +1,7 @@
 from database.requests import get_all_user_tasks, get_task_by_id, set_user_task
 from fastapi import APIRouter, HTTPException
 from src.ext.dependencies import WebAppUser
-from src.ext.responses import DetailResponse
+from src.ext.schemas import DetailResponse
 from src.tasks.schemas import CompleteTask, Task, TaskList
 
 router = APIRouter(prefix="/tasks", tags=['Задания'])

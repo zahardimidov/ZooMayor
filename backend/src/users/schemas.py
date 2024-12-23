@@ -1,72 +1,44 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from config import TEST_USER
-from fastapi import HTTPException, Request
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field
 from src.users.models import UserLanguageEnum
 
 
-class CreateTestUser(BaseModel):
+class UserBase(BaseModel):
+    id: int
+    username: str
+    lang: Optional[UserLanguageEnum] = Field(
+        default=UserLanguageEnum.ru, validate_default=True
+    )
+
+    class Config:
+        extra = 'ignore'
+        json_encoders = {
+            datetime: lambda v: v.strftime('%d/%m/%Y %H:%M:%S')
+        }
+
+class CreateTestUser(UserBase):
     id: int = TEST_USER['id']
     username: str = 'Guest'
-    lang: str = "ru"
-
-    @field_validator("lang", mode='before')
-    def validate_lang(cls, value: str):
-        if value not in UserLanguageEnum._member_names_:
-            raise HTTPException(
-                status_code=400, detail=f'Incorrect language. Available languages {UserLanguageEnum._member_names_}')
-        return value
-
-
-class InitDataRequest(BaseModel):
-    initData: str = "{}"
-
-
-class AuthInitDataResponse(BaseModel):
-    access_token: str
-    token_type: str = 'bearer'
-
-
-class User(BaseModel):
-    id: int
-    username: str
-
-    level: int
-    exp: int
-    energy: int
-    balance: int
-
-    lang: str
-    vibration: bool
-    dark_mode: bool
-
 
 class SwitchLangRequest(BaseModel):
-    lang: str
+    lang: UserLanguageEnum = Field(
+        default=UserLanguageEnum.ru, validate_default=True
+    )
 
-    @field_validator("lang", mode='before')
-    def validate_lang(cls, value: str):
-        if value not in UserLanguageEnum._member_names_:
-            raise HTTPException(
-                status_code=400, detail=f'Incorrect language. Available languages {UserLanguageEnum._member_names_}')
-        return value
-
-
-class UserResponse(BaseModel):
-    id: int
-    username: str
-
+class UserResponse(UserBase):
     level: int
     exp: int
     energy: int
     balance: int
+
+    registered_at: datetime
 
 
 class UserRefResponse(BaseModel):
     link: str
-
 
 class UserSettingsResponse(BaseModel):
     lang: str
@@ -74,9 +46,8 @@ class UserSettingsResponse(BaseModel):
     dark_mode: bool
 
 
-class FriendResponse(BaseModel):
-    username: str
-    registered_at: datetime
+class FriendResponse(UserResponse):
+    ...
 
 
 class UserFriendsList(BaseModel):
