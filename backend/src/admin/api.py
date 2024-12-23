@@ -57,4 +57,4 @@ async def cardbacks(query: str = Query(default=None)):
         cards = [carback.to_dict() for carback in await get_cities_cards(query=query)]
     )
 
- 
+   
