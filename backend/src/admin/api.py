@@ -27,7 +27,7 @@ async def create_card_handler(data: CardBase = Depends(), photo: UploadFile = Fi
     await save_file(path=CARD_PICTURES_DIR + f'{card.id}.png', content=content)
 
     return CreateCardResponse(card_id=card.id, **dict(data))
-
+  
 
 @router.post('/create_cardback', response_model=CreateCardbackResponse)
 async def create_card_handler(data: CardBackBase = Depends(), photo: UploadFile = File()):
