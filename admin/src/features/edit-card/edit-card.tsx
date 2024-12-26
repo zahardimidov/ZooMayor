@@ -68,6 +68,9 @@ export function EditCard() {
 
     fetch(`http://0.0.0.0:4550/admin/create_card?${params}`, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
       body: formData
     }).then(response => {
       if (response.ok) {

@@ -9,6 +9,9 @@ export function CardBackCarousel() {
   useEffect(() => {
     fetch(`http://0.0.0.0:4550/admin/cardbacks`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     }).then(response => response.json())
       .then(data => {
         setCardBacksResults(data.cardbacks);

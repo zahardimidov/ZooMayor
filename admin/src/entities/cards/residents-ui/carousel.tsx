@@ -9,6 +9,9 @@ export function ResidentsCarousel() {
   useEffect(() => {
     fetch(`http://0.0.0.0:4550/admin/cards/citizens`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     }).then(response => response.json())
       .then(data => {
         setCardsResults(data.cards);

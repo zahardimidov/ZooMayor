@@ -17,6 +17,9 @@ export function CardBackDashboard() {
   function searchCardbacks(){
     fetch(`http://0.0.0.0:4550/admin/cardbacks`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     }).then(response => response.json())
     .then(data => {
       setSearchResults(data.cardbacks);

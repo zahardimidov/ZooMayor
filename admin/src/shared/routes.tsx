@@ -3,6 +3,8 @@ import { createEvent } from 'effector'
 
 export const homeRoute = createRoute()
 
+export const loginRoute = createRoute()
+
 export const cardsRoute = createRoute()
 export const editCardBackRoute = createRoute<{ id: 'new' | string }>()
 export const editCardRoute = createRoute<{ id: 'new' | string }>()

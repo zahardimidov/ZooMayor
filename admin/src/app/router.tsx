@@ -16,6 +16,7 @@ import {
   setsRoute,
   tastsRoute,
   usersRoute,
+  loginRoute,
 } from '@/shared/routes'
 import { homeView } from '@/pages/home'
 import { cardsView } from '@/pages/cards'
@@ -25,6 +26,7 @@ import { editSetView, setsView } from '@/pages/sets'
 import { editTaskView, tastsView } from '@/pages/tasks'
 import { editModView, modsView } from '@/pages/mods'
 import { editUserView, userView } from '@/pages/user'
+import { loginView } from '@/pages/login'
 
 const router = createHistoryRouter({
   routes: [
@@ -42,6 +44,8 @@ const router = createHistoryRouter({
     { route: editModRoute, path: '/mods/edit/:id' },
     { route: usersRoute, path: '/users' },
     { route: editUserRoute, path: '/users/edit/:id' },
+    { route: editUserRoute, path: '/users/edit/:id' },
+    { route: loginRoute, path: '/login' },
   ],
 })
 
@@ -51,6 +55,7 @@ export function WithRouter() {
   return (
     <RouterProvider router={router}>
       <Route route={homeRoute} view={homeView} />
+      <Route route={loginRoute} view={loginView} />
       <Route route={cardsRoute} view={cardsView} />
       <Route route={editCardBackRoute} view={editCardBackView} />
       <Route route={editSetRoute} view={editSetView} />

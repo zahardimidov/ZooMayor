@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from typing import List
 
+from src.admin.models import Moderator
 from database.session import async_session
 from fastapi import HTTPException
 from sqlalchemy import and_, func, select, update, or_
-from src.cards.models import Card, Group, GroupCard, CardBack, CardTypeEnum, CardSectionEnum
+from src.cards.models import Card, Group, GroupCard, CardBack, CardTypeEnum
 from src.invitecode.models import InviteCode
 from src.tasks.models import Task
 from src.users.models import User, UserCard, UserInviteCode, UserRef, UserTask, UserGroup, UserCardBack
@@ -437,3 +438,45 @@ async def get_users_registered_last_24h() -> int:
 async def get_cards_opened_last_24h() -> int:
     # TODO: get from db
     return 12_345_678
+
+
+async def get_moderator_by_login(login: str) -> Moderator:
+    async with async_session() as session:
+        moderator = await session.scalar(select(Moderator).where(Moderator.name == login))
+        return moderator
+
+
+async def login_moderator(login: str, password: str) -> Moderator:
+    async with async_session() as session:
+        await create_default_moderator(session)
+
+        moderator = await session.scalar(select(Moderator).where(Moderator.name == login, Moderator.password == password))
+        return moderator
+
+
+async def create_default_moderator(session):
+    result = await session.execute(select(Moderator).where(Moderator.name == 'Admin'))
+    existing_moderator = result.scalars().first()
+
+    if not existing_moderator:
+        new_moderator = Moderator(
+            status=True,
+            # last_login=datetime.now(timezone.utc),
+            name='Admin', 
+            password='admin',
+            telegram_account='@admin',
+            email='admin@example.com',
+            description='Default moderator with all permissions',
+            p_action_cards=True,
+            p_action_set_cards=True,
+            p_action_tasks=True,
+            p_action_bonuses=True,
+            p_action_users=True,
+            p_action_ref=True,
+            p_action_shop=True,
+            p_action_other=True
+        )
+
+        session.add(new_moderator)
+        await session.commit()
+        print('Default moderator created.')

@@ -27,6 +27,9 @@ export function HomePage() {
   useEffect(() => {
     fetch(`http://0.0.0.0:4550/admin/statistics/total`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     }).then(response => response.json())
       .then(data => {
         setStatistics(data);

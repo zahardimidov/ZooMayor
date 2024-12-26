@@ -75,3 +75,8 @@ class TotalStatisticsResponse(BaseModel):
     total_users: int
     new_users_last_24h: int
     cards_opened_last_24h: int
+
+
+class SignInRequest(BaseModel):
+    login: str
+    password: str

@@ -1,10 +1,24 @@
 import { homeRoute } from '@/shared/routes'
 import { Link } from 'atomic-router-react'
+import { useEffect, useState } from 'react';
 
 export function Header() {
-  const name = 'Ivan Admin' // admin name
+  const [name, setName] = useState<string>('');
+
+  useEffect(() => {
+    fetch(`http://0.0.0.0:4550/admin/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then(response => response.json())
+      .then(data => {
+        setName(data.name);
+      });
+  }, [])
   const signOut = () => {
-    // sign out logic
+    localStorage.removeItem('token');
+    window.location.href = '/login';
   }
   return (
     <header className="w-full flex items-center px-[60px] py-[20px] bg-green justify-between">
