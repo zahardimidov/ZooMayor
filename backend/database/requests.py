@@ -298,6 +298,22 @@ async def set_user_task(user_id, task_id):
         await user_receive_bonuses(user_id=user_id, **userTask.task.__dict__)
 
 
+async def get_total_users_count() -> int:
+    async with async_session() as session:
+        result = await session.scalar(select(func.count(User.id)))
+        return result
+
+
+async def get_users_registered_last_24h() -> int:
+    async with async_session() as session:
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+        result = await session.scalar(
+            select(func.count(User.id))
+            .where(User.registered_at >= yesterday)
+        )
+        return result
+
+
 async def create_task(title, **kwargs):
     async with async_session() as session:
         task = Task(title=title, **kwargs)
@@ -318,7 +334,8 @@ async def create_card(title, **kwargs):
         await session.refresh(card)
 
         return card
-    
+
+
 async def create_cardback(title, **kwargs):
     async with async_session() as session:
         cardback = CardBack(title=title, **kwargs)
