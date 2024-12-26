@@ -66,5 +66,12 @@ class CreateCardbackResponse(CardBackBase):
 class CardBackList(BaseModel):
     cardbacks: List[CreateCardbackResponse]
 
+
 class CardList(BaseModel):
     cards: List[CreateCardResponse]
+
+
+class TotalStatisticsResponse(BaseModel):
+    total_users: int
+    new_users_last_24h: int
+    cards_opened_last_24h: int

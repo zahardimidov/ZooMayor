@@ -298,22 +298,6 @@ async def set_user_task(user_id, task_id):
         await user_receive_bonuses(user_id=user_id, **userTask.task.__dict__)
 
 
-async def get_total_users_count() -> int:
-    async with async_session() as session:
-        result = await session.scalar(select(func.count(User.id)))
-        return result
-
-
-async def get_users_registered_last_24h() -> int:
-    async with async_session() as session:
-        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
-        result = await session.scalar(
-            select(func.count(User.id))
-            .where(User.registered_at >= yesterday)
-        )
-        return result
-
-
 async def create_task(title, **kwargs):
     async with async_session() as session:
         task = Task(title=title, **kwargs)
@@ -430,3 +414,26 @@ async def get_cities_cards(query):
             cards = await session.scalars(select(Card).where(Card.type == CardTypeEnum.city.value))
 
         return cards.all()
+
+# ___________________________ s1rne's code ___________________________
+
+
+async def get_total_users_count() -> int:
+    async with async_session() as session:
+        result = await session.scalar(select(func.count(User.id)))
+        return result
+
+
+async def get_users_registered_last_24h() -> int:
+    async with async_session() as session:
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+        result = await session.scalar(
+            select(func.count(User.id))
+            .where(User.registered_at >= yesterday)
+        )
+        return result
+
+
+async def get_cards_opened_last_24h() -> int:
+    # TODO: get from db
+    return 12_345_678

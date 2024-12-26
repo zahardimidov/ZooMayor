@@ -1,12 +1,12 @@
 from config import BASE_DIR, CARD_PICTURES_DIR
 from database.requests import (create_card, create_cardback, create_task,
-                               get_cardbacks, get_cities_cards,
-                               get_citizens_cards)
+                               get_cardbacks, get_cards_opened_last_24h, get_cities_cards,
+                               get_citizens_cards, get_total_users_count, get_users_registered_last_24h)
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from src.admin.schemas import (CardBackBase, CardBackList, CardBase, CardList,
                                CreateCardbackResponse, CreateCardResponse,
-                               CreateTask, CreateTaskResponse)
-from src.ext.schemas import DetailResponse
+                               CreateTask, CreateTaskResponse, TotalStatisticsResponse)
+# from src.ext.schemas import DetailResponse
 from src.ext.utils import save_file
 
 router = APIRouter(prefix="/admin", tags=['Админка'])
@@ -27,7 +27,7 @@ async def create_card_handler(data: CardBase = Depends(), photo: UploadFile = Fi
     await save_file(path=CARD_PICTURES_DIR + f'{card.id}.png', content=content)
 
     return CreateCardResponse(card_id=card.id, **dict(data))
-  
+
 
 @router.post('/create_cardback', response_model=CreateCardbackResponse)
 async def create_card_handler(data: CardBackBase = Depends(), photo: UploadFile = File()):
@@ -57,4 +57,17 @@ async def cardbacks(query: str = Query(default=None)):
 async def cardbacks(query: str = Query(default=None)):
     return dict(
         cards=[carback.to_dict() for carback in await get_cities_cards(query=query)]
+    )
+
+# ___________________________ s1rne's code ___________________________
+
+
+@router.get('/statistics/total', response_model=TotalStatisticsResponse)
+async def total_statistics():
+    # Получить статистику (общее количество пользователей, количество новых пользователей за последние 24 часа, количество открытых карт за последние 24 часа)
+    return dict(
+        total_users=await get_total_users_count(),
+        new_users_last_24h=await get_users_registered_last_24h(),
+        # TODO: get from db
+        cards_opened_last_24h=await get_cards_opened_last_24h(),
     )

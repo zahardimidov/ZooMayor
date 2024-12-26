@@ -2,6 +2,7 @@ __pycache__/
 .pytest_cache/
 .env/
 venv/
+.venv/
 database.db
 .coverage
 node_modules
