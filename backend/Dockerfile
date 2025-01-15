@@ -1,30 +1,14 @@
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
-RUN apt-get update && apt-get install -y \
-    python3-dev \
-    gcc \
-    musl-dev \
-    libjpeg8-dev \
-    zlib1g-dev \
-    libtiff5-dev \
-    libopenjp2-7-dev \
-    liblcms2-dev \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk add gcc python3-dev musl-dev zlib
 
-RUN pip install --upgrade pip
-RUN pip install --upgrade pip setuptools
-RUN pip install Pillow --no-cache-dir
-RUN pip install --upgrade pip
-RUN pip install --no-cache /wheels/*
+RUN apk add build-base python-dev py-pip jpeg-dev zlib-dev
 
 WORKDIR /backend
 
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade Pillow
-
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 COPY . .
 
