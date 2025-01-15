@@ -1,14 +1,15 @@
 from bot import process_update, run_bot_webhook
-from config import PORT, WEBHOOK_PATH
+from config import CARD_PICTURES_DIR, PORT, WEBHOOK_PATH
 from database.admin import init_admin
 from database.session import *
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
 from src.admin.api import router as admin_router
 from src.cards.api import router as cards_router
 from src.ext.schemas import ErrorResponse
+from src.ext.utils import ImageCacheMiddleware, path_exists
 from src.invitecode.api import router as invitecode_router
 from src.tasks.api import router as tasks_router
 from src.users.api import router as users_router
@@ -16,7 +17,7 @@ from src.users.api import router as users_router
 
 async def on_startup(app: FastAPI):
     init_admin(app=app, engine=engine)
-    await run_database()
+    await run_database(True)
     await run_bot_webhook()
 
     yield
@@ -32,6 +33,8 @@ app.include_router(invitecode_router)
 app.include_router(tasks_router)
 app.include_router(admin_router)
 
+
+app.add_middleware(ImageCacheMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -44,7 +47,7 @@ app.add_middleware(
 
 
 @app.get('/', response_class=HTMLResponse, include_in_schema=False)
-async def home(request):
+async def home():
     return f'<div style="display: flex; width: 100vw; height: 100vh; justify-content: center; background-color: #F9F9F9; color: #03527E;"> <b style="margin-top:35vh">Welcome!</b> </div>'
 
 

@@ -1,4 +1,4 @@
-from config import (ADMIN_PASSWORD, ADMIN_SECRET_KEY, ADMIN_USERNAME, DEV_MODE,
+from config import (ADMIN_PASSWORD, ADMIN_SECRET_KEY, ADMIN_USERNAME, DEV_MODE, CARD_PICTURES_DIR,
                     HOST)
 from fastapi import Request
 from jinja2 import pass_context
@@ -10,6 +10,9 @@ from src.invitecode.models import InviteCode
 from src.tasks.models import Task
 from src.users.models import (User, UserCard, UserCardBack, UserGroup,
                               UserInviteCode, UserRef, UserTask)
+from flask_admin.form import FileUploadField
+from werkzeug.utils import secure_filename
+import os
 
 
 class AdminAuth(AuthenticationBackend):
@@ -89,6 +92,7 @@ class CardAdmin(ModelView, model=Card):
     category = 'Карты'
     name = 'Карта'
     name_plural = 'Карты'
+
 
 
 class UserCardAdmin(ModelView, model=UserCard):

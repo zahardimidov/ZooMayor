@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import HTTPException
-from pydantic import BaseModel, computed_field, field_validator, ConfigDict
+from pydantic import BaseModel, computed_field, field_validator, ConfigDict, validator
 from src.ext.schemas import TranslatableResponse
 
 class CardResponse(TranslatableResponse):
@@ -17,6 +17,10 @@ class CardResponse(TranslatableResponse):
     type: str
     section: str
     rating: int
+    
+    @field_validator("photo", mode='before')
+    def validate_photo(cls, v: str):
+        return v.replace('/backend', '') if v else v
 
 
 class SearchCardResponse(BaseModel):
@@ -50,6 +54,15 @@ class UserCardbackResponse(BaseModel):
 
     cardback_id: str
     photo: str | None = None
+
+    @validator('photo', pre=True)
+    def remove_backend(cls, v):
+        return v.replace('/backend', '') if v else v
+    
+    @field_validator("photo", mode='before')
+    def validate_card_ind(cls, v: str):
+        return v.replace('/backend', '') if v else v
+
 
 
 class UserCardBacksList(BaseModel):

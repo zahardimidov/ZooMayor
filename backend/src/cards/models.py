@@ -5,7 +5,8 @@ from config import CARD_PICTURES_DIR
 from database.session import Base
 from sqlalchemy import Enum, Float, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-
+from fastapi_storages import FileSystemStorage
+from fastapi_storages.integrations.sqlalchemy import FileType
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -40,10 +41,7 @@ class Card(Base):
     section = mapped_column(Enum(CardSectionEnum), nullable=False)
 
     rating = mapped_column(Integer, nullable=False)
-
-    @property
-    def photo(self):
-        return CARD_PICTURES_DIR.joinpath(f'{self.id}.png')
+    photo = mapped_column(FileType(storage=FileSystemStorage(path=CARD_PICTURES_DIR)), nullable=True)
 
     def __repr__(self) -> str:
         return f'{self.title} ({self.id})'
@@ -67,10 +65,7 @@ class CardBack(Base):
     min_level = mapped_column(Integer, default=0)
 
     rating = mapped_column(Integer, nullable=False)
-
-    @property
-    def photo(self):
-        return CARD_PICTURES_DIR.joinpath(f'{self.id}.png')
+    photo = mapped_column(FileType(storage=FileSystemStorage(path=CARD_PICTURES_DIR)), nullable=True)
 
     def __repr__(self) -> str:
         return f'{self.title} ({self.id})'
