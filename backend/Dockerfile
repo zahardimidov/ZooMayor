@@ -8,7 +8,7 @@ RUN apk add build-base python-dev py-pip jpeg-dev zlib-dev
 WORKDIR /backend
 
 COPY requirements.txt requirements.txt
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . .
 
