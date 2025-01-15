@@ -3,7 +3,7 @@ FROM python:3.12-alpine
 RUN apk update \
     && apk add gcc python3-dev musl-dev zlib
 
-RUN apk add build-base python-dev py-pip jpeg-dev zlib-dev
+RUN apk add build-base py-pip jpeg-dev zlib-dev
 
 WORKDIR /backend
 
