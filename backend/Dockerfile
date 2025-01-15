@@ -1,5 +1,6 @@
 FROM python:3.12-slim
 
+# Установка необходимых системных зависимостей
 RUN apt-get update && apt-get install -y \
     python3-dev \
     gcc \
@@ -12,18 +13,21 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
+# Обновление pip и установка Pillow
 RUN pip install --upgrade pip setuptools
 RUN pip install Pillow --no-cache-dir
-   
+
+# Установка рабочей директории
 WORKDIR /backend
 
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade Pillow
-
+# Копирование файла зависимостей
 COPY requirements.txt requirements.txt
+
+# Установка зависимостей из requirements.txt
 RUN pip install -r requirements.txt
 
+# Копирование остальных файлов проекта
 COPY . .
 
+# Команда для запуска приложения
 CMD python run.py
