@@ -15,6 +15,9 @@ RUN pip install --upgrade pip
 
 WORKDIR /backend
 
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade Pillow
+
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
