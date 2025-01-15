@@ -10,9 +10,6 @@ from src.invitecode.models import InviteCode
 from src.tasks.models import Task
 from src.users.models import (User, UserCard, UserCardBack, UserGroup,
                               UserInviteCode, UserRef, UserTask)
-from flask_admin.form import FileUploadField
-from werkzeug.utils import secure_filename
-import os
 
 
 class AdminAuth(AuthenticationBackend):
