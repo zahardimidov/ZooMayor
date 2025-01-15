@@ -1,21 +1,20 @@
-FROM python:3.12
+FROM python:3.12-slim
 
 # Установка необходимых системных зависимостей
 RUN apt-get update && apt-get install -y \
     python3-dev \
     gcc \
     musl-dev \
-    libjpeg8-dev \
+    libjpeg-dev \
     zlib1g-dev \
     libtiff5-dev \
     libopenjp2-7-dev \
     liblcms2-dev \
     libffi-dev \
+    libwebp-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Обновление pip и установка Pillow
-RUN pip install --upgrade pip setuptools
-RUN pip install Pillow --no-cache-dir
 
 # Установка рабочей директории
 WORKDIR /backend
