@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip install --upgrade pip
+
 WORKDIR /backend
 
 COPY requirements.txt requirements.txt
