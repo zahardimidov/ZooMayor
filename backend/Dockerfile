@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
 # Установка рабочей директории
 WORKDIR /backend
 
+RUN pip install Pillow --no-cache-dir
+
 # Копирование файла зависимостей
 COPY requirements.txt requirements.txt
 
