@@ -26,20 +26,20 @@ services:
   #  ports:
   #    - "3000:3000"
 
-  admin:
-    restart: unless-stopped
+  #admin:
+  #  restart: unless-stopped
 
-    build:
-      context: ./admin
-      args:
-        - REACT_APP_API_URL=${HOST}/api
-    networks:
-      - dev
-    ports:
-      - "5173:5173"
-    depends_on:
-      - zoomayor-postgres
-      - backend
+  #  build:
+  #    context: ./admin
+  #    args:
+  #      - REACT_APP_API_URL=${HOST}/api
+  #  networks:
+  #    - dev
+  #  ports:
+  #    - "5173:5173"
+  #  depends_on:
+  #    - zoomayor-postgres
+  #    - backend
       
   backend:
     restart: unless-stopped
