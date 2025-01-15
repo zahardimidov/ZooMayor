@@ -1,6 +1,7 @@
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y \
+    python3-dev \
     gcc \
     musl-dev \
     libjpeg8-dev \
@@ -12,7 +13,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
-
+RUN pip install --upgrade pip setuptools
+RUN pip install Pillow --no-cache-dir
+   
 WORKDIR /backend
 
 RUN python3 -m pip install --upgrade pip
